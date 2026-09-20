@@ -1,0 +1,14 @@
+﻿{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "start",
+            "type": "shell",
+            "command": "npm",
+            "args": ["start"],
+            "runOptions": { "runOn": "folderOpen" },
+            "presentation": { "reveal": "always", "panel": "dedicated" },
+            "problemMatcher": []
+        }
+    ]
+}
