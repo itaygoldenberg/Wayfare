@@ -6,7 +6,7 @@ class App {
     const server: Express = express();
     server.use(express.json());   
     server.listen(appConfig.port, () => console.log(`Listening on http://localhost:${appConfig.port}`));
-
+   
     }
 }
 
