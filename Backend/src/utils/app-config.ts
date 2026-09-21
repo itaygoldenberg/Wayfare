@@ -12,6 +12,8 @@ class AppConfig {
     public readonly mysqlUser = process.env.MYSQL_USER!;
     public readonly mysqlPassword = process.env.MYSQL_PASSWORD!;
     public readonly mysqlDatabase = process.env.MYSQL_DATABASE!;
+    public readonly hashSalt = process.env.HASH_SALT!;
+    public readonly jwtSecret = process.env.JWT_SECRET!;
 
  
 }
