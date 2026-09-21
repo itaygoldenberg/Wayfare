@@ -3,14 +3,15 @@ import { appConfig } from "./utils/app-config";
 import { errorMiddleware } from "./middleware/error-middleware";
 
 class App {
-    public start(): void {
+  public start(): void {
     const server: Express = express();
-    server.use(express.json());   
+    server.use(express.json());
     server.use(errorMiddleware.routeNotFound);
     server.use(errorMiddleware.catchAll);
-    server.listen(appConfig.port, () => console.log(`Listening on http://localhost:${appConfig.port}`));
-   
-    }
+    server.listen(appConfig.port, () =>
+      console.log(`Listening on http://localhost:${appConfig.port}`),
+    );
+  }
 }
 
 const app = new App();

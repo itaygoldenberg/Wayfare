@@ -25,15 +25,14 @@ class Cyber {
 
     return jwt.sign(container, appConfig.jwtSecret, options);
   }
-      public verifyToken(token: string): boolean {
-        try {
-            jwt.verify(token, appConfig.jwtSecret);
-            return true;
-        }
-        catch {
-            return false;
-        }
+  public verifyToken(token: string): boolean {
+    try {
+      jwt.verify(token, appConfig.jwtSecret);
+      return true;
+    } catch {
+      return false;
     }
+  }
 }
 
 export const cyber = new Cyber();
