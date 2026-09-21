@@ -7,9 +7,10 @@ class App {
   public start(): void {
     const server: Express = express();
     server.use(express.json());
+    server.use(userController.router);
     server.use(errorMiddleware.routeNotFound);
     server.use(errorMiddleware.catchAll);
-    server.use(userController.router);
+
     server.listen(appConfig.port, () =>
       console.log(`Listening on http://localhost:${appConfig.port}`),
     );
