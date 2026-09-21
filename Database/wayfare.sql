@@ -43,3 +43,6 @@ INSERT INTO vacations (destination, description, startDate, endDate, price, imag
 ('Patagonia, Argentina', 'The end of the continent. Granite towers over glacial lakes, the Perito Moreno glacier calving into the water while you watch, and hiking trails where you will not see another person for hours.', '2027-01-09', '2027-01-22', 5650.00, 'patagonia.jpg'),
 ('Dubrovnik, Croatia', 'A walled city on the Adriatic, entirely limestone and entirely walkable. Circle the ramparts at golden hour, swim off the rocks below the old town, and take the cable car up for the whole coast at once.', '2027-04-03', '2027-04-11', 1780.00, 'dubrovnik.jpg'),
 ('Bali, Indonesia', 'Rice terraces in Ubud, surf breaks on the west coast, and temples on cliffs above the sea. Mornings at a warung, afternoons in the water, and a volcano sunrise hike if you can face the alarm.', '2027-05-16', '2027-05-28', 3190.00, 'bali.jpg');
+
+INSERT INTO users (firstName, lastName, email, password, role) VALUES
+('Itay', 'Goldenberg', 'admin@wayfare.com', '9bba6ba2bf44f519164e7bf84f8178998a2e863ed8ed9101325fdf06a3a30cb6d569a7942d9846d433ed8561c1083f2fb05ba25f9f318e063808cd1b64592afc', 'Admin');
