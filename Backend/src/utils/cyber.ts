@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { appConfig } from "./app-config";
 import jwt from "jsonwebtoken";
 import { UserModel } from "../models/user-model";
+import { Request } from "express";
 
 class Cyber {
   public hash(plainText: string): string {
@@ -36,6 +37,10 @@ class Cyber {
   public getUserFromToken(token: string): UserModel {
     const container = jwt.decode(token) as { user: UserModel };
     return container.user;
+  }
+  public getUserIdFromRequest(request: Request): number {
+    const token = request.headers.authorization!.substring(7);
+    return this.getUserFromToken(token).userId;
   }
 }
 
