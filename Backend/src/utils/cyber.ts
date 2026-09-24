@@ -32,12 +32,11 @@ class Cyber {
     } catch {
       return false;
     }
-    
   }
-      public getUserFromToken(token: string): UserModel {
-        const container = jwt.decode(token) as { user: UserModel };
-        return container.user;
-    }
+  public getUserFromToken(token: string): UserModel {
+    const container = jwt.decode(token) as { user: UserModel };
+    return container.user;
+  }
 }
 
 export const cyber = new Cyber();
