@@ -3,7 +3,9 @@ import { cyber } from "../utils/cyber";
 import { ClientError } from "../models/client-error";
 import { Role, StatusCode } from "../models/enums";
 
+// Guards routes using the JWT sent in the Authorization header.
 class AuthMiddleware {
+  // Lets the request through only with a valid token (401 otherwise).
   public verifyLoggedIn(
     request: Request,
     response: Response,
@@ -20,6 +22,7 @@ class AuthMiddleware {
     next();
   }
 
+  // Lets the request through only with a valid admin token (401 without a token, 403 for a regular user).
   public verifyAdmin(
     request: Request,
     response: Response,

@@ -4,6 +4,7 @@ import { userService } from "../services/user-service";
 import { StatusCode } from "../models/enums";
 import { CredentialsModel } from "../models/credentials-model";
 
+// Routes for registering and logging in.
 class UserController {
   public readonly router = express.Router();
 
@@ -11,11 +12,13 @@ class UserController {
     this.registerRoutes();
   }
 
+  // Maps each URL to its handler.
   private registerRoutes(): void {
     this.router.post("/api/register", this.register);
     this.router.post("/api/login", this.login);
   }
 
+  // POST /api/register - creates a regular user and returns a token.
   private async register(
     request: Request,
     response: Response,
@@ -29,6 +32,7 @@ class UserController {
       next(err);
     }
   }
+  // POST /api/login - returns a token for valid credentials.
   private async login(
     request: Request,
     response: Response,

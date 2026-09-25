@@ -1,0 +1,696 @@
+{
+  "info": {
+    "name": "Wayfare",
+    "description": "Every endpoint of the Wayfare backend.\n\nSetup:\n1. Run Database/wayfare.sql in MySQL.\n2. Start the backend (npm start in the Backend folder).\n3. Run \"Login as admin\" or \"Login as user\" first - the token is stored automatically in the collection variable {{token}} and every other request uses it.\n\nThe seeded admin is admin@wayfare.com / 1234.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "vacationId", "value": "1", "type": "string" },
+    { "key": "imageName", "value": "rome.jpg", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"token\", pm.response.text().replace(/^\"|\"$/g, \"\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"New\",\n  \"lastName\": \"Traveller\",\n  \"email\": \"new.traveller@wayfare.com\",\n  \"password\": \"1234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "register"]
+            },
+            "description": "Creates a user with role User and returns a JWT. A second call with the same email returns 409."
+          }
+        },
+        {
+          "name": "Login as admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"token\", pm.response.text().replace(/^\"|\"$/g, \"\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@wayfare.com\",\n  \"password\": \"1234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Run this before the admin-only requests. The returned token is saved to {{token}}."
+          }
+        },
+        {
+          "name": "Login as user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"token\", pm.response.text().replace(/^\"|\"$/g, \"\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"new.traveller@wayfare.com\",\n  \"password\": \"1234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            },
+            "description": "Logs in the user created by Register. Use it to prove the admin-only routes answer 403."
+          }
+        },
+        {
+          "name": "Login with a wrong password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@wayfare.com\",\n  \"password\": \"wrong\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "login"]
+            },
+            "description": "The message never says whether it was the email or the password that was wrong."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vacations",
+      "item": [
+        {
+          "name": "Get all vacations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json();",
+                  "pm.test(\"carries likesCount and isLiked\", () => {",
+                  "    pm.expect(list[0]).to.have.property(\"likesCount\");",
+                  "    pm.expect(list[0]).to.have.property(\"isLiked\");",
+                  "});",
+                  "if (list.length) pm.collectionVariables.set(\"vacationId\", list[0].vacationId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations"]
+            },
+            "description": "Sorted by startDate. likesCount is the total for the vacation; isLiked is 1 only for the user who owns the token."
+          }
+        },
+        {
+          "name": "Get all vacations without a token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations"]
+            },
+            "description": "No token at all - 401, not 403."
+          }
+        },
+        {
+          "name": "Get one vacation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "{{vacationId}}"]
+            },
+            "description": "Used by the edit form. A missing id returns 404."
+          }
+        },
+        {
+          "name": "Get one vacation that does not exist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "999999"]
+            }
+          }
+        },
+        {
+          "name": "Add a vacation (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"vacationId\", pm.response.json().vacationId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "destination",
+                  "value": "Lisbon, Portugal",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Tiled facades, tram 28 and pasteis de nata straight from the oven.",
+                  "type": "text"
+                },
+                { "key": "startDate", "value": "2027-06-01", "type": "text" },
+                { "key": "endDate", "value": "2027-06-08", "type": "text" },
+                { "key": "price", "value": "2400", "type": "text" },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Pick any jpg from Backend/src/assets/images"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations"]
+            },
+            "description": "Requires an admin token and multipart/form-data, because it carries a file. Select an image in the Body tab before sending."
+          }
+        },
+        {
+          "name": "Add a vacation as a regular user",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "destination", "value": "Nowhere", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations"]
+            },
+            "description": "Run \"Login as user\" first. A valid token with the wrong role is 403, not 401."
+          }
+        },
+        {
+          "name": "Add a vacation with a price above 10000",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"422 Unprocessable Content\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "destination",
+                  "value": "Too Expensive",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "A description long enough to pass validation.",
+                  "type": "text"
+                },
+                { "key": "startDate", "value": "2027-06-01", "type": "text" },
+                { "key": "endDate", "value": "2027-06-08", "type": "text" },
+                { "key": "price", "value": "20000", "type": "text" },
+                { "key": "image", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations"]
+            },
+            "description": "Run as admin. Zod rejects it before the query is built."
+          }
+        },
+        {
+          "name": "Add a vacation starting in the past",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"422 Unprocessable Content\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "destination",
+                  "value": "Back In Time",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "A description long enough to pass validation.",
+                  "type": "text"
+                },
+                { "key": "startDate", "value": "2020-01-01", "type": "text" },
+                { "key": "endDate", "value": "2020-01-10", "type": "text" },
+                { "key": "price", "value": "1500", "type": "text" },
+                { "key": "image", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations"]
+            },
+            "description": "Past dates are blocked on add only. Editing an old vacation is allowed."
+          }
+        },
+        {
+          "name": "Edit a vacation (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "destination",
+                  "value": "Lisbon, Portugal",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Edited description, still long enough to pass validation.",
+                  "type": "text"
+                },
+                { "key": "startDate", "value": "2027-06-02", "type": "text" },
+                { "key": "endDate", "value": "2027-06-10", "type": "text" },
+                { "key": "price", "value": "2600", "type": "text" },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Leave empty to keep the existing image"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "{{vacationId}}"]
+            },
+            "description": "Sending no file keeps the previous imageName instead of blanking it."
+          }
+        },
+        {
+          "name": "Delete a vacation (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"204 No Content\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "{{vacationId}}"]
+            },
+            "description": "ON DELETE CASCADE removes the matching rows in likes as well."
+          }
+        },
+        {
+          "name": "Get an image",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/images/{{imageName}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "images", "{{imageName}}"]
+            },
+            "description": "Deliberately open: the browser requests it from an img tag, which cannot send an Authorization header."
+          }
+        },
+        {
+          "name": "Get an image that does not exist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/images/no-such-image.jpg",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "images", "no-such-image.jpg"]
+            },
+            "description": "404 with a clean message, and no server path in the body."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Likes",
+      "item": [
+        {
+          "name": "Add a like",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "{{vacationId}}", "like"]
+            },
+            "description": "There is no body. The user id is taken from the signed token, so it cannot be forged."
+          }
+        },
+        {
+          "name": "Add the same like twice",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "{{vacationId}}", "like"]
+            },
+            "description": "Send \"Add a like\" first. The composite primary key (userId, vacationId) blocks it at the database even if the check above is bypassed."
+          }
+        },
+        {
+          "name": "Add a like with a forged userId in the body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"the body is ignored\", () => pm.expect(pm.response.code).to.be.oneOf([201, 409]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"userId\": 99999\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "{{vacationId}}", "like"]
+            },
+            "description": "The like is still recorded for the token holder. Check the likes table: user 99999 never appears."
+          }
+        },
+        {
+          "name": "Remove a like",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"204 No Content\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations", "{{vacationId}}", "like"]
+            },
+            "description": "Idempotent: sending it again on a like that is already gone is still 204."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Errors",
+      "item": [
+        {
+          "name": "Unknown route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/does-not-exist",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "does-not-exist"]
+            },
+            "description": "routeNotFound is registered after every controller, so it only fires when nothing matched."
+          }
+        },
+        {
+          "name": "Malformed token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer not-a-real-token" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "vacations"]
+            },
+            "description": "A tampered token fails signature verification, so it is rejected exactly like no token at all."
+          }
+        }
+      ]
+    }
+  ]
+}

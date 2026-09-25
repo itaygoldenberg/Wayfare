@@ -3,7 +3,9 @@ import { ClientError } from "../models/client-error";
 import { StatusCode } from "../models/enums";
 import { appConfig } from "../utils/app-config";
 
+// Turns every error into a JSON response with the right status code.
 class ErrorMiddleware {
+  // Registered after all controllers, so it runs only when no route matched.
   public routeNotFound(
     request: Request,
     response: Response,
@@ -17,6 +19,7 @@ class ErrorMiddleware {
     );
   }
 
+  // Client errors are sent as they are; server error details are hidden outside development.
   public catchAll(
     err: any,
     request: Request,

@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// Reads every setting from .env once, so no other file touches process.env.
 class AppConfig {
   public readonly environment = process.env.ENVIRONMENT!;
   public readonly isDevelopment = this.environment === "development";

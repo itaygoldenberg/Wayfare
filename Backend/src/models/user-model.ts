@@ -2,7 +2,7 @@ import z from "zod";
 import { ClientError } from "./client-error";
 import { Role, StatusCode } from "./enums";
 
-// User Schema:
+// Validation rules for a user.
 const UserSchema = z.object({
   userId: z.number().int().positive().optional(),
   firstName: z.string().min(2).max(50),
@@ -12,10 +12,10 @@ const UserSchema = z.object({
   role: z.enum(Role).optional(),
 });
 
-// User Interface (I = Interface):
+// The model's shape, derived from the schema.
 type IUserModel = z.infer<typeof UserSchema>;
 
-// User Model:
+// A user as sent by the client or read from the database.
 export class UserModel implements IUserModel {
   public userId: number;
   public firstName: string;
@@ -33,6 +33,7 @@ export class UserModel implements IUserModel {
     this.role = user.role;
   }
 
+  // Throws a 422 with the first validation problem found.
   public validate(): void {
     const result = UserSchema.safeParse(this);
     if (!result.success) {

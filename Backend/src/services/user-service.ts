@@ -5,7 +5,9 @@ import { Role, StatusCode } from "../models/enums";
 import { ClientError } from "../models/client-error";
 import { CredentialsModel } from "../models/credentials-model";
 
+// Business logic for users.
 class UserService {
+  // Checks whether an email is already registered.
   private async isEmailTaken(email: string): Promise<boolean> {
     const sql = "SELECT COUNT(*) AS count FROM users WHERE email = ?";
 
@@ -13,6 +15,7 @@ class UserService {
 
     return result[0].count > 0;
   }
+  // Validates, hashes the password, forces the User role, saves, and returns a token.
   public async register(user: UserModel): Promise<string> {
     user.validate();
     if (await this.isEmailTaken(user.email))
@@ -37,6 +40,7 @@ class UserService {
 
     return cyber.getNewToken(user);
   }
+  // Hashes the given password and looks for a user with that email and hash.
   public async login(credentials: CredentialsModel): Promise<string> {
     credentials.validate();
 

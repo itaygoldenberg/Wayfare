@@ -1,3 +1,4 @@
+// HTTP status codes used by the API.
 export enum StatusCode {
   // Success:
   OK = 200,
@@ -17,6 +18,7 @@ export enum StatusCode {
   InternalServerError = 500,
 }
 
+// String values on purpose: MySQL reads a number inserted into an ENUM as its position.
 export enum Role {
   Admin = "Admin",
   User = "User",

@@ -3,6 +3,7 @@ import { ClientError } from "./client-error";
 import { StatusCode } from "./enums";
 import { UploadedFile } from "express-fileupload";
 
+// Validation rules for a vacation.
 const VacationSchema = z.object({
   vacationId: z.number().int().positive().optional(),
   destination: z.string().min(2).max(50),
@@ -13,8 +14,10 @@ const VacationSchema = z.object({
   imageName: z.string().optional(),
 });
 
+// The model's shape, derived from the schema.
 type IVacationModel = z.infer<typeof VacationSchema>;
 
+// A vacation; likesCount and isLiked are computed by the query, image is the uploaded file.
 export class VacationModel implements IVacationModel {
   public vacationId: number;
   public destination: string;
@@ -23,6 +26,8 @@ export class VacationModel implements IVacationModel {
   public endDate: string;
   public price: number;
   public imageName: string;
+  public likesCount: number;
+  public isLiked: number;
   public image: UploadedFile;
 
   public constructor(vacation: VacationModel) {
@@ -33,9 +38,12 @@ export class VacationModel implements IVacationModel {
     this.endDate = vacation.endDate;
     this.price = vacation.price;
     this.imageName = vacation.imageName;
+    this.likesCount = vacation.likesCount;
+    this.isLiked = vacation.isLiked;
     this.image = vacation.image;
   }
 
+  // Throws a 422 with the first validation problem found.
   public validate(): void {
     const result = VacationSchema.safeParse(this);
     if (!result.success) {

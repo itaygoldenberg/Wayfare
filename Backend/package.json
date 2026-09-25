@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/app.ts",
   "scripts": {
-    "start": "nodemon --exec tsx src/app.ts",
+    "start": "nodemon --ext ts --exec tsx src/app.ts",
     "build": "tsc"
   },
   "keywords": [],
@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/express-fileupload": "^1.5.1",
     "@types/jsonwebtoken": "^9.0.10",
@@ -21,6 +22,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "dotenv": "^18.0.1",
     "express": "^5.2.1",
     "express-fileupload": "^1.5.2",

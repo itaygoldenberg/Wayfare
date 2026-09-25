@@ -4,6 +4,7 @@ import { cyber } from "../utils/cyber";
 import { authMiddleware } from "../middleware/auth-middleware";
 import { StatusCode } from "../models/enums";
 
+// Routes for liking and unliking a vacation.
 class LikeController {
   public readonly router = express.Router();
 
@@ -11,6 +12,7 @@ class LikeController {
     this.registerRoutes();
   }
 
+  // Maps each URL to its handler.
   private registerRoutes(): void {
     this.router.post(
       "/api/vacations/:vacationId/like",
@@ -24,6 +26,7 @@ class LikeController {
     );
   }
 
+  // POST /api/vacations/:vacationId/like - the user id comes from the token, never from the body.
   private async addLike(
     request: Request,
     response: Response,
@@ -39,6 +42,7 @@ class LikeController {
     }
   }
 
+  // DELETE /api/vacations/:vacationId/like - removes the like.
   private async removeLike(
     request: Request,
     response: Response,

@@ -1,10 +1,14 @@
 import express, { Request, Response, NextFunction } from "express";
 import path from "path";
+import fs from "fs";
 import { vacationService } from "../services/vacation-service";
 import { VacationModel } from "../models/vacation-model";
+import { ClientError } from "../models/client-error";
 import { StatusCode } from "../models/enums";
 import { authMiddleware } from "../middleware/auth-middleware";
+import { cyber } from "../utils/cyber";
 
+// Routes for vacations: reading needs a login, changing needs an admin.
 class VacationController {
   public readonly router = express.Router();
 
@@ -12,6 +16,7 @@ class VacationController {
     this.registerRoutes();
   }
 
+  // Maps each URL to its access guard and handler.
   private registerRoutes(): void {
     this.router.get(
       "/api/vacations",
@@ -41,19 +46,22 @@ class VacationController {
     this.router.get("/api/vacations/images/:imageName", this.getImage);
   }
 
+  // GET /api/vacations - every vacation with likes information for the logged-in user.
   private async getAllVacations(
     request: Request,
     response: Response,
     next: NextFunction,
   ): Promise<void> {
     try {
-      const vacations = await vacationService.getAllVacations();
+      const userId = cyber.getUserIdFromRequest(request);
+      const vacations = await vacationService.getAllVacations(userId);
       response.json(vacations);
     } catch (err: any) {
       next(err);
     }
   }
 
+  // GET /api/vacations/:vacationId - one vacation.
   private async getOneVacation(
     request: Request,
     response: Response,
@@ -68,6 +76,7 @@ class VacationController {
     }
   }
 
+  // POST /api/vacations - adds a vacation with its image; form fields arrive as text, so price is converted.
   private async addVacation(
     request: Request,
     response: Response,
@@ -84,6 +93,7 @@ class VacationController {
     }
   }
 
+  // PUT /api/vacations/:vacationId - updates a vacation; a new image is optional.
   private async updateVacation(
     request: Request,
     response: Response,
@@ -101,6 +111,7 @@ class VacationController {
     }
   }
 
+  // DELETE /api/vacations/:vacationId - deletes a vacation and, by cascade, its likes.
   private async deleteVacation(
     request: Request,
     response: Response,
@@ -114,6 +125,7 @@ class VacationController {
     }
   }
 
+  // GET /api/vacations/images/:imageName - open to all, because an <img> tag cannot send a token.
   private async getImage(
     request: Request,
     response: Response,
@@ -128,6 +140,11 @@ class VacationController {
         "images",
         imageName,
       );
+      if (!fs.existsSync(absolutePath))
+        throw new ClientError(
+          StatusCode.NotFound,
+          `Image ${imageName} not found.`,
+        );
       response.sendFile(absolutePath);
     } catch (err: any) {
       next(err);
