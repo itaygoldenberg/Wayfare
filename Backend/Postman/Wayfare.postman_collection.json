@@ -1,18 +1,8 @@
 {
   "info": {
     "name": "Wayfare",
-    "description": "Every endpoint of the Wayfare backend.\n\nSetup:\n1. Run Database/wayfare.sql in MySQL.\n2. Start the backend (npm start in the Backend folder).\n3. Run \"Login as admin\" or \"Login as user\" first - the token is stored automatically in the collection variable {{token}} and every other request uses it.\n\nThe seeded admin is admin@wayfare.com / 1234.",
+    "description": "Every route of the Wayfare backend (http://localhost:4000), folder by folder.\n\nBefore you start: the system runs (docker compose up -d --build) and the database has its starting data.\n\nLogin as user and Login as admin save the token in the collection's {{token}}, and every request uses it (Authorization > Bearer Token on the collection). So the order matters: the User folder runs after Login as user, the Admin folder after Login as admin. Run collection runs everything in that order.\n\nAccounts: admin@wayfare.com / Atlas-Harbor-7319, daniel@wayfare.com / 1234.\n\nAdd a vacation needs an image: under Body > form-data > image, choose any picture (for example Backend/src/assets/images/rome.jpg).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    { "key": "baseUrl", "value": "http://localhost:4000", "type": "string" },
-    { "key": "token", "value": "", "type": "string" },
-    { "key": "vacationId", "value": "1", "type": "string" },
-    { "key": "imageName", "value": "rome.jpg", "type": "string" }
-  ],
-  "auth": {
-    "type": "bearer",
-    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
   },
   "item": [
     {
@@ -20,247 +10,271 @@
       "item": [
         {
           "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Dana\",\n  \"lastName\": \"Mor\",\n  \"email\": \"dana.mor@wayfare.com\",\n  \"password\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "201 and a token. A second run answers 409 Email already taken."
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
-                  "pm.collectionVariables.set(\"token\", pm.response.text().replace(/^\"|\"$/g, \"\"));"
+                  "const token = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", token);"
                 ]
               }
             }
-          ],
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"firstName\": \"New\",\n  \"lastName\": \"Traveller\",\n  \"email\": \"new.traveller@wayfare.com\",\n  \"password\": \"1234\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "register"]
-            },
-            "description": "Creates a user with role User and returns a JWT. A second call with the same email returns 409."
-          }
+          ]
         },
         {
-          "name": "Login as admin",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set(\"token\", pm.response.text().replace(/^\"|\"$/g, \"\"));"
-                ]
-              }
-            }
-          ],
+          "name": "Login with a wrong password",
           "request": {
-            "auth": { "type": "noauth" },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "login"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@wayfare.com\",\n  \"password\": \"1234\"\n}"
+              "raw": "{\n  \"email\": \"daniel@wayfare.com\",\n  \"password\": \"wrong-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "login"]
+            "auth": {
+              "type": "noauth"
             },
-            "description": "Run this before the admin-only requests. The returned token is saved to {{token}}."
+            "description": "401 Incorrect email or password."
           }
         },
         {
           "name": "Login as user",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"daniel@wayfare.com\",\n  \"password\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.collectionVariables.set(\"token\", pm.response.text().replace(/^\"|\"$/g, \"\"));"
+                  "const token = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", token);"
                 ]
               }
             }
-          ],
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"new.traveller@wayfare.com\",\n  \"password\": \"1234\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "login"]
-            },
-            "description": "Logs in the user created by Register. Use it to prove the admin-only routes answer 403."
-          }
-        },
-        {
-          "name": "Login with a wrong password",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@wayfare.com\",\n  \"password\": \"wrong\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "login"]
-            },
-            "description": "The message never says whether it was the email or the password that was wrong."
-          }
+          ]
         }
       ]
     },
     {
-      "name": "Vacations",
+      "name": "User",
       "item": [
         {
           "name": "Get all vacations",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "const list = pm.response.json();",
-                  "pm.test(\"carries likesCount and isLiked\", () => {",
-                  "    pm.expect(list[0]).to.have.property(\"likesCount\");",
-                  "    pm.expect(list[0]).to.have.property(\"isLiked\");",
-                  "});",
-                  "if (list.length) pm.collectionVariables.set(\"vacationId\", list[0].vacationId);"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/vacations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations"]
-            },
-            "description": "Sorted by startDate. likesCount is the total for the vacation; isLiked is 1 only for the user who owns the token."
-          }
-        },
-        {
-          "name": "Get all vacations without a token",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
-                ]
-              }
+              "raw": "http://localhost:4000/api/vacations",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations"
+              ]
             }
-          ],
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/vacations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations"]
-            },
-            "description": "No token at all - 401, not 403."
           }
         },
         {
           "name": "Get one vacation",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "{{vacationId}}"]
-            },
-            "description": "Used by the edit form. A missing id returns 404."
+              "raw": "http://localhost:4000/api/vacations/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "1"
+              ]
+            }
           }
         },
         {
           "name": "Get one vacation that does not exist",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/vacations/999999",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "999999"]
-            }
+              "raw": "http://localhost:4000/api/vacations/999",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "999"
+              ]
+            },
+            "description": "404 Vacation not found."
           }
         },
         {
-          "name": "Add a vacation (admin)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
-                  "pm.collectionVariables.set(\"vacationId\", pm.response.json().vacationId);"
-                ]
-              }
-            }
-          ],
+          "name": "Add a like",
           "request": {
             "method": "POST",
             "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations/4/like",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "4",
+                "like"
+              ]
+            },
+            "description": "201. The user comes from the token, never from the body."
+          }
+        },
+        {
+          "name": "Add the same like twice",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations/4/like",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "4",
+                "like"
+              ]
+            },
+            "description": "409 You already liked this vacation."
+          }
+        },
+        {
+          "name": "Remove a like",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations/4/like",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "4",
+                "like"
+              ]
+            },
+            "description": "204"
+          }
+        },
+        {
+          "name": "Add a vacation as a regular user",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations"
+              ]
+            },
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -274,157 +288,209 @@
                   "value": "Tiled facades, tram 28 and pasteis de nata straight from the oven.",
                   "type": "text"
                 },
-                { "key": "startDate", "value": "2027-06-01", "type": "text" },
-                { "key": "endDate", "value": "2027-06-08", "type": "text" },
-                { "key": "price", "value": "2400", "type": "text" },
                 {
-                  "key": "image",
-                  "type": "file",
-                  "src": [],
-                  "description": "Pick any jpg from Backend/src/assets/images"
+                  "key": "startDate",
+                  "value": "2027-06-01",
+                  "type": "text"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2027-06-08",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "2400",
+                  "type": "text"
                 }
               ]
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/vacations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations"]
-            },
-            "description": "Requires an admin token and multipart/form-data, because it carries a file. Select an image in the Body tab before sending."
+            "description": "403 You are not authorized."
           }
         },
         {
-          "name": "Add a vacation as a regular user",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"403 Forbidden\", () => pm.response.to.have.status(403));"
-                ]
-              }
-            }
-          ],
+          "name": "Get a trip recommendation",
           "request": {
             "method": "POST",
             "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                { "key": "destination", "value": "Nowhere", "type": "text" }
+            "url": {
+              "raw": "http://localhost:4000/api/ai/recommendation",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "ai",
+                "recommendation"
               ]
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/vacations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations"]
-            },
-            "description": "Run \"Login as user\" first. A valid token with the wrong role is 403, not 401."
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destination\": \"Lisbon, Portugal\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Add a vacation with a price above 10000",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"422 Unprocessable Content\", () => pm.response.to.have.status(422));"
-                ]
-              }
-            }
-          ],
+          "name": "Recommendation without a destination",
           "request": {
             "method": "POST",
             "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "destination",
-                  "value": "Too Expensive",
-                  "type": "text"
-                },
-                {
-                  "key": "description",
-                  "value": "A description long enough to pass validation.",
-                  "type": "text"
-                },
-                { "key": "startDate", "value": "2027-06-01", "type": "text" },
-                { "key": "endDate", "value": "2027-06-08", "type": "text" },
-                { "key": "price", "value": "20000", "type": "text" },
-                { "key": "image", "type": "file", "src": [] }
+            "url": {
+              "raw": "http://localhost:4000/api/ai/recommendation",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "ai",
+                "recommendation"
               ]
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/vacations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations"]
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "description": "Run as admin. Zod rejects it before the query is built."
+            "description": "422 Destination is required."
           }
         },
         {
-          "name": "Add a vacation starting in the past",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"422 Unprocessable Content\", () => pm.response.to.have.status(422));"
-                ]
-              }
-            }
-          ],
+          "name": "Ask the MCP assistant",
           "request": {
             "method": "POST",
             "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "destination",
-                  "value": "Back In Time",
-                  "type": "text"
-                },
-                {
-                  "key": "description",
-                  "value": "A description long enough to pass validation.",
-                  "type": "text"
-                },
-                { "key": "startDate", "value": "2020-01-01", "type": "text" },
-                { "key": "endDate", "value": "2020-01-10", "type": "text" },
-                { "key": "price", "value": "1500", "type": "text" },
-                { "key": "image", "type": "file", "src": [] }
+            "url": {
+              "raw": "http://localhost:4000/api/ai/ask",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "ai",
+                "ask"
               ]
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/vacations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations"]
-            },
-            "description": "Past dates are blocked on add only. Editing an old vacation is allowed."
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What is the average price of the vacations?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Edit a vacation (admin)",
+          "name": "Ask with an empty question",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/ai/ask",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "ai",
+                "ask"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "422 Question must have at least 2 characters."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Login as admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@wayfare.com\",\n  \"password\": \"Atlas-Harbor-7319\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
+                  "const token = pm.response.json();",
+                  "pm.collectionVariables.set(\"token\", token);"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "Add a vacation",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations"
+              ]
+            },
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -435,262 +501,458 @@
                 },
                 {
                   "key": "description",
-                  "value": "Edited description, still long enough to pass validation.",
+                  "value": "Tiled facades, tram 28 and pasteis de nata straight from the oven.",
                   "type": "text"
                 },
-                { "key": "startDate", "value": "2027-06-02", "type": "text" },
-                { "key": "endDate", "value": "2027-06-10", "type": "text" },
-                { "key": "price", "value": "2600", "type": "text" },
+                {
+                  "key": "startDate",
+                  "value": "2027-06-01",
+                  "type": "text"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2027-06-08",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "2400",
+                  "type": "text"
+                },
                 {
                   "key": "image",
                   "type": "file",
-                  "src": [],
-                  "description": "Leave empty to keep the existing image"
+                  "src": "../src/assets/images/rome.jpg"
                 }
               ]
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "{{vacationId}}"]
-            },
-            "description": "Sending no file keeps the previous imageName instead of blanking it."
-          }
-        },
-        {
-          "name": "Delete a vacation (admin)",
+            "description": "201. Choose any image under Body > form-data > image. The new vacation's id is saved in {{vacationId}} for Edit and Delete."
+          },
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"204 No Content\", () => pm.response.to.have.status(204));"
+                  "const vacation = pm.response.json();",
+                  "pm.collectionVariables.set(\"vacationId\", vacation.vacationId);"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "Add a vacation with a price above 10000",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "destination",
+                  "value": "Lisbon, Portugal",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Tiled facades, tram 28 and pasteis de nata straight from the oven.",
+                  "type": "text"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2027-06-01",
+                  "type": "text"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2027-06-08",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "10001",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "422 Price cannot be more than 10,000."
+          }
+        },
+        {
+          "name": "Add a vacation starting in the past",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "destination",
+                  "value": "Lisbon, Portugal",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Tiled facades, tram 28 and pasteis de nata straight from the oven.",
+                  "type": "text"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2020-01-01",
+                  "type": "text"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2020-01-08",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "2400",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "422 Start date cannot be in the past."
+          }
+        },
+        {
+          "name": "Edit a vacation",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations/{{vacationId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "{{vacationId}}"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "destination",
+                  "value": "Lisbon, Portugal",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Tiled facades, tram 28 and pasteis de nata straight from the oven.",
+                  "type": "text"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2027-06-01",
+                  "type": "text"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2027-06-08",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "2150",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "200. Edits the vacation that Add a vacation created; without a new image the old one stays."
+          }
+        },
+        {
+          "name": "Add a like as the admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations/1/like",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "1",
+                "like"
+              ]
+            },
+            "description": "403 Only regular users can like vacations."
+          }
+        },
+        {
+          "name": "Delete a vacation",
           "request": {
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "{{vacationId}}"]
+              "raw": "http://localhost:4000/api/vacations/{{vacationId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "{{vacationId}}"
+              ]
             },
-            "description": "ON DELETE CASCADE removes the matching rows in likes as well."
+            "description": "204. Deletes the vacation that Add a vacation created, and its image."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Without a token",
+      "item": [
+        {
+          "name": "Get all vacations without a token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/vacations",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "401 You are not logged in."
           }
         },
         {
           "name": "Get an image",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ],
           "request": {
-            "auth": { "type": "noauth" },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/vacations/images/{{imageName}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "images", "{{imageName}}"]
+              "raw": "http://localhost:4000/api/vacations/images/rome.jpg",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "images",
+                "rome.jpg"
+              ]
             },
-            "description": "Deliberately open: the browser requests it from an img tag, which cannot send an Authorization header."
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "200. Images need no token, because an <img> tag cannot send one."
           }
         },
         {
           "name": "Get an image that does not exist",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"
-                ]
-              }
-            }
-          ],
           "request": {
-            "auth": { "type": "noauth" },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/vacations/images/no-such-image.jpg",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "images", "no-such-image.jpg"]
+              "raw": "http://localhost:4000/api/vacations/images/no-such-image.jpg",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations",
+                "images",
+                "no-such-image.jpg"
+              ]
             },
-            "description": "404 with a clean message, and no server path in the body."
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "200 with a \"not found\" picture."
           }
-        }
-      ]
-    },
-    {
-      "name": "Likes",
-      "item": [
+        },
         {
-          "name": "Add a like",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));"
-                ]
-              }
-            }
-          ],
+          "name": "Recommendation without a token",
           "request": {
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}/like",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "{{vacationId}}", "like"]
+              "raw": "http://localhost:4000/api/ai/recommendation",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "ai",
+                "recommendation"
+              ]
             },
-            "description": "There is no body. The user id is taken from the signed token, so it cannot be forged."
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"destination\": \"Lisbon, Portugal\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "401"
           }
         },
         {
-          "name": "Add the same like twice",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));"
-                ]
-              }
-            }
-          ],
+          "name": "Ask without a token",
           "request": {
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}/like",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "{{vacationId}}", "like"]
+              "raw": "http://localhost:4000/api/ai/ask",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "ai",
+                "ask"
+              ]
             },
-            "description": "Send \"Add a like\" first. The composite primary key (userId, vacationId) blocks it at the database even if the check above is bypassed."
-          }
-        },
-        {
-          "name": "Add a like with a forged userId in the body",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"the body is ignored\", () => pm.expect(pm.response.code).to.be.oneOf([201, 409]));"
-                ]
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What is the average price of the vacations?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
               }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"userId\": 99999\n}" },
-            "url": {
-              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}/like",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "{{vacationId}}", "like"]
             },
-            "description": "The like is still recorded for the token holder. Check the likes table: user 99999 never appears."
-          }
-        },
-        {
-          "name": "Remove a like",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"204 No Content\", () => pm.response.to.have.status(204));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/vacations/{{vacationId}}/like",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations", "{{vacationId}}", "like"]
+            "auth": {
+              "type": "noauth"
             },
-            "description": "Idempotent: sending it again on a like that is already gone is still 204."
-          }
-        }
-      ]
-    },
-    {
-      "name": "Errors",
-      "item": [
-        {
-          "name": "Unknown route",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/does-not-exist",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "does-not-exist"]
-            },
-            "description": "routeNotFound is registered after every controller, so it only fires when nothing matched."
+            "description": "401"
           }
         },
         {
           "name": "Malformed token",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
-                ]
-              }
-            }
-          ],
           "request": {
-            "auth": { "type": "noauth" },
             "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer not-a-real-token" }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/vacations",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "vacations"]
+              "raw": "http://localhost:4000/api/vacations",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "vacations"
+              ]
             },
-            "description": "A tampered token fails signature verification, so it is rejected exactly like no token at all."
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "not-a-real-token",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "401 You are not logged in."
+          }
+        },
+        {
+          "name": "Unknown route",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4000/api/no-such-route",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "api",
+                "no-such-route"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "404 Route /api/no-such-route not found."
           }
         }
       ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "vacationId",
+      "value": ""
     }
   ]
 }
