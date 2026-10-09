@@ -1,0 +1,18 @@
+# Read from the build context (./Frontend), not from the project root.
+
+# Built on Windows; the image builds its own for Linux with npm install
+node_modules
+
+# Anything named VITE_ ends up in the browser bundle, so no .env goes into the image
+.env
+.env.*
+
+# Not needed inside the image
+.git
+.gitignore
+dist
+build
+.vscode
+Dockerfile
+.dockerignore
+*.log

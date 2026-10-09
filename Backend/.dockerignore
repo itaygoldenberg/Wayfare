@@ -1,0 +1,18 @@
+# Read from the build context (./Backend), not from the project root.
+
+# Built on Windows; the image builds its own for Linux with npm install
+node_modules
+
+# Secrets are mounted at run time (compose.yaml), never baked into the image
+.env
+.env.*
+
+# Not needed inside the image
+.git
+.gitignore
+dist
+build
+Postman
+Dockerfile
+.dockerignore
+*.log

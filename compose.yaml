@@ -1,0 +1,133 @@
+# Build images always, and run (-d = detach the terminal):
+# docker compose up -d --build
+
+# Stop containers (the data stays in the volumes):
+# docker compose down
+
+name: wayfare
+
+# All images and containers:
+services:
+  # MySQL container:
+  mysql-service:
+    # MySQL image:
+    image: mysql:8
+
+    # Container name:
+    container_name: wayfare-mysql
+
+    # Restart policy:
+    restart: unless-stopped
+
+    # Volumes:
+    volumes:
+      - wayfare-mysql-volume:/var/lib/mysql
+      # Database/wayfare.sql runs only while the volume is empty; after changing it: docker compose down -v
+      - ./Database:/docker-entrypoint-initdb.d:ro
+
+    # Environment variables needed by mysql image:
+    environment:
+      MYSQL_ROOT_PASSWORD: wayfare-root-password
+      MYSQL_DATABASE: wayfare
+      MYSQL_USER: wayfare
+      MYSQL_PASSWORD: wayfare-docker-password
+      # Israel's time zone, so CURDATE() (the "active now" vacations) gives Israel's date and not UTC's
+      TZ: Asia/Jerusalem
+
+    # Healthcheck - constantly check if our service is working well.
+    # 127.0.0.1 and not localhost: it passes only after the seed has finished and the real server is up.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # -----------------------------------------------------------------------
+
+  # Our backend service:
+  backend-service:
+    # Which other services we're depending on, so wait for them:
+    depends_on:
+      mysql-service:
+        condition: service_healthy
+
+    # Our image:
+    image: wayfare-backend
+
+    # Build the image from the following Dockerfile location:
+    build: ./Backend
+
+    # Our container:
+    container_name: wayfare-backend
+
+    # Port mapping (host-port:container-port):
+    ports:
+      - 4000:4000
+
+    # Restart policy:
+    restart: unless-stopped
+
+    # Volumes:
+    volumes:
+      # The vacation images survive rebuilds; the first start copies in the 12 seed images
+      - wayfare-images-volume:/app/src/assets/images
+      # The real .env stays on the host and is handed to the container read-only, never baked into the image
+      - ./Backend/.env:/app/.env:ro
+
+    # These override the .env file: dotenv.config() does not overwrite variables
+    # that already exist in process.env, so whatever is set here wins.
+    environment:
+      ENVIRONMENT: development
+      PORT: 4000
+      MYSQL_HOST: mysql-service # The service name is the address of the MySQL container
+      MYSQL_USER: wayfare
+      MYSQL_PASSWORD: wayfare-docker-password
+      MYSQL_DATABASE: wayfare
+      TZ: Asia/Jerusalem
+
+    # Healthcheck - constantly check if our service is working well (an image needs no token, so the log stays clean):
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "--eval",
+          "require('http').get('http://localhost:4000/api/vacations/images/rome.jpg', response => process.exit(response.statusCode === 200 ? 0 : 1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # -----------------------------------------------------------------------
+
+  # Frontend container:
+  frontend-service:
+    # Which other services we're depending on, so wait for them:
+    depends_on:
+      backend-service:
+        condition: service_healthy
+
+    # Our image:
+    image: wayfare-frontend
+
+    # Build the image from the following Dockerfile location:
+    build: ./Frontend
+
+    # Our container:
+    container_name: wayfare-frontend
+
+    # Port mapping (host-port:container-port):
+    ports:
+      - 5173:5173
+
+    # Restart policy:
+    restart: unless-stopped
+
+# -----------------------------------------------------------------------
+
+# List of all our named-volumes:
+volumes:
+  wayfare-mysql-volume:
+  wayfare-images-volume:
