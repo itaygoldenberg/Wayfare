@@ -1,6 +1,6 @@
-import path from "path";
-import crypto from "crypto";
 import { UploadedFile } from "express-fileupload";
+import { saver } from "smart-saver";
+import path from "path";
 import { dal } from "../utils/dal";
 import { VacationModel } from "../models/vacation-model";
 import { ClientError } from "../models/client-error";
@@ -26,35 +26,81 @@ class VacationService {
     return vacations;
   }
 
+  // The shared parts of the queries the MCP tools use: like counts, but no user data and no image names.
+  private readonly aiSelect = `
+    SELECT V.vacationId, V.destination, V.description, V.startDate, V.endDate, V.price, COUNT(L.userId) AS likesCount
+    FROM vacations AS V
+    LEFT JOIN likes AS L ON V.vacationId = L.vacationId`;
+  private readonly aiGroup = "GROUP BY V.vacationId ORDER BY V.startDate";
+
+  // Every vacation with its like count.
+  public async getVacationsForAi(): Promise<VacationModel[]> {
+    return await dal.execute(`${this.aiSelect} ${this.aiGroup}`);
+  }
+
+  // Vacations running today; CURDATE() is the database's own date.
+  public async getActiveVacationsForAi(): Promise<VacationModel[]> {
+    return await dal.execute(
+      `${this.aiSelect} WHERE CURDATE() BETWEEN V.startDate AND V.endDate ${this.aiGroup}`,
+    );
+  }
+
+  // Vacations that have not started yet.
+  public async getFutureVacationsForAi(): Promise<VacationModel[]> {
+    return await dal.execute(
+      `${this.aiSelect} WHERE V.startDate > CURDATE() ${this.aiGroup}`,
+    );
+  }
+
+  // Totals across all vacations, computed by MySQL rather than left to the AI's arithmetic.
+  public async getStatistics(): Promise<Record<string, number>> {
+    const sql = `
+      SELECT COUNT(*) AS vacationsCount, ROUND(AVG(price), 2) AS averagePrice,
+             MIN(price) AS lowestPrice, MAX(price) AS highestPrice,
+             (SELECT COUNT(*) FROM likes) AS totalLikes
+      FROM vacations`;
+    const rows = await dal.execute(sql);
+    return rows[0];
+  }
+
   // Returns one vacation, or 404.
   public async getOneVacation(vacationId: number): Promise<VacationModel> {
     const sql = "SELECT * FROM vacations WHERE vacationId = ?";
     const vacations = await dal.execute(sql, [vacationId]);
     if (vacations.length === 0)
-      throw new ClientError(
-        StatusCode.NotFound,
-        `Vacation ${vacationId} not found.`,
-      );
+      throw new ClientError(StatusCode.NotFound, "Vacation not found.");
     return vacations[0];
   }
 
-  // Saves the uploaded image under a random unique name and returns that name.
-  private async saveImage(image: UploadedFile): Promise<string> {
-    const extension = image.name.substring(image.name.lastIndexOf("."));
-    const imageName = crypto.randomUUID() + extension;
-    const absolutePath = path.join(
-      __dirname,
-      "..",
-      "assets",
-      "images",
-      imageName,
-    );
-    await image.mv(absolutePath);
-    return imageName;
+  // Only real images are accepted: an .html file saved with the images would be served from our own address.
+  // The mimetype is a label the sender writes, so the file's extension is checked too.
+  private checkImage(image: UploadedFile): void {
+    const extension = path.extname(image.name).toLowerCase();
+    const allowed = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"];
+    if (!image.mimetype.startsWith("image/") || !allowed.includes(extension))
+      throw new ClientError(
+        StatusCode.UnprocessableContent,
+        "The file must be an image.",
+      );
   }
+
+  // Destination and description are in English only, like the AI pages: a Hebrew letter (codes 1424 to 1535) gets a 422.
+  private checkEnglish(vacation: VacationModel): void {
+    const text = vacation.destination + vacation.description;
+    for (let i = 0; i < text.length; i++) {
+      const code = text.charCodeAt(i);
+      if (code >= 1424 && code <= 1535)
+        throw new ClientError(
+          StatusCode.UnprocessableContent,
+          "Please write in English only.",
+        );
+    }
+  }
+
   // Validates, saves the image, and inserts the vacation.
   public async addVacation(vacation: VacationModel): Promise<VacationModel> {
     vacation.validate();
+    this.checkEnglish(vacation);
     this.validateDates(vacation, true);
 
     if (!vacation.image)
@@ -62,7 +108,11 @@ class VacationService {
         StatusCode.UnprocessableContent,
         "Image is required.",
       );
-    vacation.imageName = await this.saveImage(vacation.image);
+    this.checkImage(vacation.image);
+
+    // Save image to disk:
+    const imageName = await saver.save(vacation.image);
+    vacation.imageName = imageName!;
 
     const sql =
       "INSERT INTO vacations(destination, description, startDate, endDate, price, imageName) VALUES(?, ?, ?, ?, ?, ?)";
@@ -77,19 +127,22 @@ class VacationService {
     const info = await dal.execute(sql, values);
 
     vacation.vacationId = info.insertId;
+    delete vacation.image;
     return vacation;
   }
 
   // Validates and updates a vacation, keeping the old image when no new one is sent.
   public async updateVacation(vacation: VacationModel): Promise<VacationModel> {
     vacation.validate();
+    this.checkEnglish(vacation);
     this.validateDates(vacation, false);
 
     const existing = await this.getOneVacation(vacation.vacationId);
+    if (vacation.image) this.checkImage(vacation.image);
 
-    vacation.imageName = vacation.image
-      ? await this.saveImage(vacation.image)
-      : existing.imageName;
+    // Update image (keeps the old one when no new file was sent):
+    const imageName = await saver.update(vacation.image!, existing.imageName);
+    vacation.imageName = imageName!;
 
     const sql =
       "UPDATE vacations SET destination = ?, description = ?, startDate = ?, endDate = ?, price = ?, imageName = ? WHERE vacationId = ?";
@@ -104,14 +157,18 @@ class VacationService {
     ];
     await dal.execute(sql, values);
 
+    delete vacation.image;
     return vacation;
   }
 
-  // Deletes a vacation, or 404 if it does not exist.
+  // Deletes a vacation and its image file, or 404 if it does not exist.
   public async deleteVacation(vacationId: number): Promise<void> {
-    await this.getOneVacation(vacationId);
+    const existing = await this.getOneVacation(vacationId);
     const sql = "DELETE FROM vacations WHERE vacationId = ?";
     await dal.execute(sql, [vacationId]);
+
+    // Delete image:
+    await saver.delete(existing.imageName);
   }
 
   // Checks the date rules; a past start date is blocked when adding but allowed when editing.
@@ -126,7 +183,7 @@ class VacationService {
       );
 
     if (blockPastDates) {
-      const today = new Date().toISOString().substring(0, 10);
+      const today = new Date().toLocaleDateString("en-CA");
       if (vacation.startDate < today)
         throw new ClientError(
           StatusCode.UnprocessableContent,

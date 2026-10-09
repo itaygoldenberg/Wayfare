@@ -28,6 +28,20 @@ class ErrorMiddleware {
   ): void {
     console.log(err);
 
+    // express.json() marks a body it cannot read as JSON this way; that is the client's mistake, so it is a 400
+    if (err.type === "entity.parse.failed")
+      err = new ClientError(
+        StatusCode.BadRequest,
+        "The request body is not valid JSON.",
+      );
+
+    // express.json() refuses a body over 100 KB this way; that is also the client's mistake, so it is a 413
+    if (err.type === "entity.too.large")
+      err = new ClientError(
+        StatusCode.PayloadTooLarge,
+        "The request body is too large.",
+      );
+
     const status =
       err instanceof ClientError ? err.status : StatusCode.InternalServerError;
 

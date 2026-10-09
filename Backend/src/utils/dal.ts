@@ -10,6 +10,8 @@ class Dal {
     database: appConfig.mysqlDatabase,
     // Keep DATE columns as "YYYY-MM-DD" text; Date objects shift them by the timezone offset.
     dateStrings: true,
+    // Return DECIMAL prices as numbers; by default they arrive as strings like "1890.00".
+    decimalNumbers: true,
   });
 
   // Runs a query; values fill the ? placeholders separately, so they can never run as SQL.

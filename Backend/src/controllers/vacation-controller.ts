@@ -1,17 +1,17 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction, Router } from "express";
 import path from "path";
-import fs from "fs";
+import { saver } from "smart-saver";
 import { vacationService } from "../services/vacation-service";
 import { VacationModel } from "../models/vacation-model";
-import { ClientError } from "../models/client-error";
 import { StatusCode } from "../models/enums";
-import { authMiddleware } from "../middleware/auth-middleware";
+import { securityMiddleware } from "../middleware/security-middleware";
 import { cyber } from "../utils/cyber";
 
 // Routes for vacations: reading needs a login, changing needs an admin.
 class VacationController {
-  public readonly router = express.Router();
+  public router: Router = express.Router();
 
+  // Registers the routes as soon as the controller is created.
   public constructor() {
     this.registerRoutes();
   }
@@ -20,27 +20,27 @@ class VacationController {
   private registerRoutes(): void {
     this.router.get(
       "/api/vacations",
-      authMiddleware.verifyLoggedIn,
+      securityMiddleware.verifyLoggedIn,
       this.getAllVacations,
     );
     this.router.get(
       "/api/vacations/:vacationId",
-      authMiddleware.verifyLoggedIn,
+      securityMiddleware.verifyLoggedIn,
       this.getOneVacation,
     );
     this.router.post(
       "/api/vacations",
-      authMiddleware.verifyAdmin,
+      securityMiddleware.verifyAdmin,
       this.addVacation,
     );
     this.router.put(
       "/api/vacations/:vacationId",
-      authMiddleware.verifyAdmin,
+      securityMiddleware.verifyAdmin,
       this.updateVacation,
     );
     this.router.delete(
       "/api/vacations/:vacationId",
-      authMiddleware.verifyAdmin,
+      securityMiddleware.verifyAdmin,
       this.deleteVacation,
     );
     this.router.get("/api/vacations/images/:imageName", this.getImage);
@@ -84,7 +84,9 @@ class VacationController {
   ): Promise<void> {
     try {
       request.body.image = request.files?.image;
-      request.body.price = +request.body.price;
+      // +"" is 0, so an empty price stays empty and the validation refuses it
+      const price = String(request.body.price).trim();
+      request.body.price = price === "" ? undefined : +price;
       const vacation = new VacationModel(request.body);
       const added = await vacationService.addVacation(vacation);
       response.status(StatusCode.Created).json(added);
@@ -102,7 +104,9 @@ class VacationController {
     try {
       request.body.vacationId = +request.params.vacationId;
       request.body.image = request.files?.image;
-      request.body.price = +request.body.price;
+      // +"" is 0, so an empty price stays empty and the validation refuses it
+      const price = String(request.body.price).trim();
+      request.body.price = price === "" ? undefined : +price;
       const vacation = new VacationModel(request.body);
       const updated = await vacationService.updateVacation(vacation);
       response.json(updated);
@@ -126,29 +130,12 @@ class VacationController {
   }
 
   // GET /api/vacations/images/:imageName - open to all, because an <img> tag cannot send a token.
-  private async getImage(
-    request: Request,
-    response: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const imageName = request.params.imageName as string;
-      const absolutePath = path.join(
-        __dirname,
-        "..",
-        "assets",
-        "images",
-        imageName,
-      );
-      if (!fs.existsSync(absolutePath))
-        throw new ClientError(
-          StatusCode.NotFound,
-          `Image ${imageName} not found.`,
-        );
-      response.sendFile(absolutePath);
-    } catch (err: any) {
-      next(err);
-    }
+  // A missing image is answered with smart-saver's "file not found" picture.
+  private getImage(request: Request, response: Response): void {
+    // basename keeps only the file name, so "../../app.ts" cannot reach outside the images folder
+    const imageName = path.basename(request.params.imageName as string);
+    const filePath = saver.getFilePath(imageName);
+    response.sendFile(filePath);
   }
 }
 

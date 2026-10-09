@@ -4,7 +4,7 @@ import { ClientError } from "../models/client-error";
 import { Role, StatusCode } from "../models/enums";
 
 // Guards routes using the JWT sent in the Authorization header.
-class AuthMiddleware {
+class SecurityMiddleware {
   // Lets the request through only with a valid token (401 otherwise).
   public verifyLoggedIn(
     request: Request,
@@ -42,6 +42,30 @@ class AuthMiddleware {
 
     next();
   }
+
+  // Lets the request through only with a valid regular-user token; the spec says the admin cannot like.
+  public verifyUser(
+    request: Request,
+    response: Response,
+    next: NextFunction,
+  ): void {
+    const header = request.headers.authorization;
+    if (!header)
+      throw new ClientError(StatusCode.Unauthorized, "You are not logged in.");
+
+    const token = header.substring(7);
+    if (!cyber.verifyToken(token))
+      throw new ClientError(StatusCode.Unauthorized, "You are not logged in.");
+
+    const role = cyber.getUserFromToken(token).role;
+    if (role !== Role.User)
+      throw new ClientError(
+        StatusCode.Forbidden,
+        "Only regular users can like vacations.",
+      );
+
+    next();
+  }
 }
 
-export const authMiddleware = new AuthMiddleware();
+export const securityMiddleware = new SecurityMiddleware();

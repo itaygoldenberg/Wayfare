@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction, Router } from "express";
 import { UserModel } from "../models/user-model";
 import { userService } from "../services/user-service";
 import { StatusCode } from "../models/enums";
@@ -6,8 +6,9 @@ import { CredentialsModel } from "../models/credentials-model";
 
 // Routes for registering and logging in.
 class UserController {
-  public readonly router = express.Router();
+  public router: Router = express.Router();
 
+  // Registers the routes as soon as the controller is created.
   public constructor() {
     this.registerRoutes();
   }

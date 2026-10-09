@@ -34,9 +34,15 @@ class UserService {
       user.password,
       user.role,
     ];
-    const info = await dal.execute(sql, values);
-
-    user.userId = info.insertId;
+    try {
+      const info = await dal.execute(sql, values);
+      user.userId = info.insertId;
+    } catch (err: any) {
+      // Two requests at the same moment can both pass isEmailTaken; the UNIQUE email lets only one in
+      if (await this.isEmailTaken(user.email))
+        throw new ClientError(StatusCode.Conflict, "Email already taken.");
+      throw err;
+    }
 
     return cyber.getNewToken(user);
   }

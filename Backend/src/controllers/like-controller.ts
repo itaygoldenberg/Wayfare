@@ -1,13 +1,14 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction, Router } from "express";
 import { likeService } from "../services/like-service";
 import { cyber } from "../utils/cyber";
-import { authMiddleware } from "../middleware/auth-middleware";
+import { securityMiddleware } from "../middleware/security-middleware";
 import { StatusCode } from "../models/enums";
 
-// Routes for liking and unliking a vacation.
+// Routes for liking and unliking a vacation; only regular users may use them.
 class LikeController {
-  public readonly router = express.Router();
+  public router: Router = express.Router();
 
+  // Registers the routes as soon as the controller is created.
   public constructor() {
     this.registerRoutes();
   }
@@ -16,12 +17,12 @@ class LikeController {
   private registerRoutes(): void {
     this.router.post(
       "/api/vacations/:vacationId/like",
-      authMiddleware.verifyLoggedIn,
+      securityMiddleware.verifyUser,
       this.addLike,
     );
     this.router.delete(
       "/api/vacations/:vacationId/like",
-      authMiddleware.verifyLoggedIn,
+      securityMiddleware.verifyUser,
       this.removeLike,
     );
   }
