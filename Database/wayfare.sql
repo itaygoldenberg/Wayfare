@@ -138,7 +138,7 @@ VALUES (
         'bali.jpg'
     );
 
--- The admin and the demo users all use the password 1234.
+-- The demo users use the password 1234; the admin has its own stronger password, listed in README.md.
 INSERT INTO
     users (
         firstName,
@@ -151,7 +151,7 @@ VALUES (
         'Itay',
         'Goldenberg',
         'admin@wayfare.com',
-        '9bba6ba2bf44f519164e7bf84f8178998a2e863ed8ed9101325fdf06a3a30cb6d569a7942d9846d433ed8561c1083f2fb05ba25f9f318e063808cd1b64592afc',
+        '872b1d241f063e29f529fa25064ce983609784a88936fa64eafabe9e8e61c14e9ec1561d3094181afafbd7033b008ba9a2d5d98202787db69fe1dbe5294c4c23',
         'Admin'
     ),
     (
