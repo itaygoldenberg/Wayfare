@@ -1,0 +1,307 @@
+/* ---------- Example questions ---------- */
+
+.AskWayfare .examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.AskWayfare .examples button {
+  padding: 8px 15px;
+  border-radius: 999px;
+  color: var(--label-2);
+  background: var(--glass-solid);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shine);
+  font-weight: 500;
+  font-size: 0.86rem;
+}
+
+.AskWayfare .examples button:hover:not(:disabled) {
+  color: var(--label);
+  background: rgba(100, 210, 255, 0.14);
+  border-color: rgba(100, 210, 255, 0.4);
+  filter: none;
+  box-shadow: var(--glass-shine);
+}
+
+/* The question on the waiting card */
+.AskWayfare .ai-card .question {
+  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--label);
+}
+
+/* ---------- One question and its answer ---------- */
+
+.AskWayfare .exchange {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+/* The question, as the user's message bubble on the right */
+.AskWayfare .question-bubble {
+  align-self: flex-end;
+  max-width: 82%;
+  margin: 0;
+  padding: 12px 18px;
+  border-radius: 22px 22px 6px 22px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 500;
+  line-height: 1.5;
+  box-shadow: var(--glow);
+  transform-origin: bottom right;
+  animation: bubble-in 0.6s var(--spring) backwards;
+}
+
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+}
+
+/* The answer comes into focus, just after the question */
+.AskWayfare .answer-card {
+  margin: 0;
+  padding: 22px 24px;
+  border-radius: var(--radius-lg);
+  animation: answer-in 0.8s var(--ease) 0.15s backwards;
+}
+
+@keyframes answer-in {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+    filter: blur(10px);
+  }
+}
+
+.AskWayfare .answer-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+/* The assistant's logo: a compass, the sign of a guide, on the logo's gradient.
+   The ring and the needle are separate pictures, so the needle can turn on its own. */
+.AskWayfare .avatar {
+  position: relative;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: var(--glow);
+  animation: avatar-glow 3s ease-in-out infinite;
+}
+
+.AskWayfare .avatar::before,
+.AskWayfare .avatar::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* The ring with its four marks, in white */
+.AskWayfare .avatar::before {
+  background: #fff;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+  transition: transform 0.8s var(--spring);
+}
+
+/* The needle, rose to the north and white to the south; it sways a little all the time, like a real compass */
+.AskWayfare .avatar::after {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.5 14.6 12H9.4Z' fill='%23ff6ec7'/%3E%3Cpath d='M12 19.5 9.4 12h5.2Z' fill='%23ffffff'/%3E%3Ccircle cx='12' cy='12' r='1.4' fill='%23ffffff'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  filter: drop-shadow(0 0 2px rgba(255, 110, 199, 0.8));
+  animation: needle-sway 4s ease-in-out infinite;
+}
+
+/* Pointing at the answer spins the needle all the way round until it settles back on north,
+   turns the ring against it, and sends a ring of light out of the logo */
+.AskWayfare .answer-card:hover .avatar::after {
+  animation: needle-spin 1.6s var(--ease);
+}
+
+.AskWayfare .answer-card:hover .avatar::before {
+  transform: rotate(-45deg);
+}
+
+.AskWayfare .answer-card:hover .avatar {
+  animation: compass-pulse 1.6s var(--ease);
+}
+
+@keyframes needle-sway {
+  25% {
+    transform: rotate(-9deg);
+  }
+  75% {
+    transform: rotate(9deg);
+  }
+}
+
+@keyframes needle-spin {
+  55% {
+    transform: rotate(420deg);
+  }
+  70% {
+    transform: rotate(345deg);
+  }
+  82% {
+    transform: rotate(372deg);
+  }
+  92% {
+    transform: rotate(355deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes compass-pulse {
+  0% {
+    box-shadow:
+      var(--glow),
+      0 0 0 0 rgba(191, 90, 242, 0.6);
+  }
+  100% {
+    box-shadow:
+      var(--glow),
+      0 0 0 14px rgba(191, 90, 242, 0);
+  }
+}
+
+@keyframes avatar-glow {
+  50% {
+    box-shadow:
+      0 0 0 6px rgba(94, 92, 230, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+}
+
+.AskWayfare .who {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ---------- The answer's text ---------- */
+
+.AskWayfare .answer-line {
+  margin: 0 0 6px;
+  color: var(--label);
+  font-size: 1.02rem;
+  line-height: 1.65;
+  animation: answer-in 0.6s var(--ease) backwards;
+}
+
+.AskWayfare .answer-line:nth-child(1) {
+  animation-delay: 0.25s;
+}
+.AskWayfare .answer-line:nth-child(2) {
+  animation-delay: 0.33s;
+}
+.AskWayfare .answer-line:nth-child(3) {
+  animation-delay: 0.41s;
+}
+.AskWayfare .answer-line:nth-child(4) {
+  animation-delay: 0.49s;
+}
+.AskWayfare .answer-line:nth-child(5) {
+  animation-delay: 0.57s;
+}
+.AskWayfare .answer-line:nth-child(n + 6) {
+  animation-delay: 0.65s;
+}
+
+/* A list item becomes its own small glass row; the AI starts it with an emoji, which serves as its bullet */
+.AskWayfare .answer-line.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 4px;
+  margin: 8px 0;
+  padding: 10px 14px;
+  position: relative;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 0.95rem;
+  transition:
+    background 0.3s var(--ease),
+    translate 0.4s var(--spring);
+}
+
+.AskWayfare .answer-line.item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  translate: 3px 0;
+}
+
+/* Data inside the answer: numbers, dates and prices each look like what they are */
+.AskWayfare .answer-line .text {
+  white-space: pre-wrap;
+}
+
+.AskWayfare .answer-line .number {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: var(--accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.AskWayfare .answer-line .date {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  color: var(--sky);
+}
+
+.AskWayfare .answer-line .price {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 6px;
+  color: var(--gold);
+  background: rgba(255, 196, 90, 0.12);
+  border: 1px solid rgba(255, 210, 120, 0.25);
+}
+
+/* A one-line answer with a number puts that number up front, large */
+.AskWayfare .answer-text:has(> .answer-line:only-child) .number {
+  font-family: var(--font-display);
+  font-size: 1.7em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  vertical-align: -0.08em;
+}
+
+@media (max-width: 560px) {
+  .AskWayfare .question-bubble {
+    max-width: 92%;
+  }
+}
+
+/* A country in the answer keeps its flag beside it, never alone on the next line */
+.AskWayfare .answer-line .country {
+  white-space: nowrap;
+}
+
+.AskWayfare .answer-line .Flag {
+  height: 0.8em;
+  vertical-align: -0.05em;
+}

@@ -1,0 +1,36 @@
+.Pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 44px;
+  flex-wrap: wrap;
+}
+
+.Pagination button {
+  min-width: 44px;
+  padding: 10px 15px;
+  border-radius: 999px;
+  color: var(--label-2);
+  background: var(--glass-solid);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shine);
+  font-weight: 500;
+}
+
+.Pagination button:hover:not(:disabled) {
+  color: var(--label);
+  background: var(--glass-hover);
+  filter: none;
+  box-shadow: var(--glass-shine);
+}
+
+.Pagination button.current {
+  color: #fff;
+  background: var(--accent);
+  border-color: transparent;
+  box-shadow:
+    0 10px 26px -10px rgba(94, 92, 230, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}

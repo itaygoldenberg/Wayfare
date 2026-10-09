@@ -1,0 +1,200 @@
+.Layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The header floats above the page; content scrolls beneath its glass */
+.Layout > header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 14px 16px 0;
+}
+
+.Layout > main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 44px 20px 64px;
+}
+
+/* The footer floats at the bottom with the same side gap as the header at the top */
+.Layout > footer {
+  padding: 0 16px 16px;
+}
+
+/* ---------- The night sky behind every page ---------- */
+
+/* Two layers of stars, each a repeating tile of tiny dots. They rise slowly and twinkle
+   at different speeds; the larger, coloured ones rise faster, so they look closer. */
+.Layout::before,
+.Layout::after {
+  content: "";
+  position: fixed;
+  inset: 0 0 -600px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.Layout::before {
+  background-image:
+    radial-gradient(1px 1px at 24px 38px, #fff, transparent),
+    radial-gradient(1px 1px at 88px 150px, #fff, transparent),
+    radial-gradient(1px 1px at 160px 60px, #fff, transparent),
+    radial-gradient(1px 1px at 214px 230px, #fff, transparent),
+    radial-gradient(1px 1px at 270px 118px, #fff, transparent),
+    radial-gradient(1px 1px at 46px 262px, #fff, transparent),
+    radial-gradient(1px 1px at 130px 284px, #fff, transparent),
+    radial-gradient(1px 1px at 192px 16px, #fff, transparent),
+    radial-gradient(1px 1px at 250px 190px, #fff, transparent),
+    radial-gradient(1px 1px at 12px 170px, #fff, transparent),
+    radial-gradient(1px 1px at 110px 92px, #fff, transparent);
+  background-size: 300px 300px;
+  opacity: 0.7;
+  animation:
+    stars-rise 90s linear infinite,
+    twinkle 3.2s ease-in-out infinite alternate;
+}
+
+.Layout::after {
+  background-image:
+    radial-gradient(1.5px 1.5px at 90px 120px, var(--sky), transparent),
+    radial-gradient(1.5px 1.5px at 330px 60px, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 470px 300px, var(--dusk), transparent),
+    radial-gradient(1.5px 1.5px at 210px 420px, #fff, transparent),
+    radial-gradient(2px 2px at 540px 520px, var(--sky), transparent),
+    radial-gradient(1.5px 1.5px at 60px 540px, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 400px 470px, #ff9fd0, transparent),
+    radial-gradient(1.5px 1.5px at 560px 190px, #fff, transparent);
+  background-size: 600px 600px;
+  opacity: 0.85;
+  animation:
+    stars-rise-far 120s linear infinite,
+    twinkle 5.3s ease-in-out -2s infinite alternate;
+}
+
+/* A few bright stars with a soft halo, which sparkle faster than the rest */
+#root::after {
+  content: "";
+  position: fixed;
+  inset: 0 0 -900px;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 140px 210px, #fff, transparent),
+    radial-gradient(
+      7px 7px at 140px 210px,
+      rgba(100, 210, 255, 0.35),
+      transparent
+    ),
+    radial-gradient(2px 2px at 690px 90px, #fff, transparent),
+    radial-gradient(
+      7px 7px at 690px 90px,
+      rgba(191, 90, 242, 0.35),
+      transparent
+    ),
+    radial-gradient(2px 2px at 420px 650px, #fff, transparent),
+    radial-gradient(
+      7px 7px at 420px 650px,
+      rgba(100, 210, 255, 0.35),
+      transparent
+    ),
+    radial-gradient(2px 2px at 820px 520px, #fff, transparent),
+    radial-gradient(
+      7px 7px at 820px 520px,
+      rgba(255, 110, 199, 0.3),
+      transparent
+    );
+  background-size: 900px 900px;
+  animation:
+    stars-rise-bright 150s linear infinite,
+    sparkle 2.4s ease-in-out infinite alternate;
+}
+
+/* Rising by exactly one tile makes each loop seamless */
+@keyframes stars-rise {
+  to {
+    transform: translateY(-300px);
+  }
+}
+
+@keyframes stars-rise-far {
+  to {
+    transform: translateY(-600px);
+  }
+}
+
+@keyframes stars-rise-bright {
+  to {
+    transform: translateY(-900px);
+  }
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.3;
+  }
+}
+
+@keyframes sparkle {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Now and then a shooting star crosses the sky, with a glowing head and a fading tail.
+   A second one crosses lower down, on its own rhythm. */
+.Layout > main::before,
+.Layout > main::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  width: 160px;
+  height: 2px;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    #fff,
+    rgba(100, 210, 255, 0.7) 20%,
+    rgba(191, 90, 242, 0.3) 55%,
+    transparent
+  );
+  filter: drop-shadow(0 0 6px rgba(100, 210, 255, 0.9));
+  opacity: 0;
+}
+
+.Layout > main::before {
+  top: 10%;
+  left: 78%;
+  animation: shooting-star 11s ease-in 3s infinite;
+}
+
+.Layout > main::after {
+  top: 38%;
+  left: 92%;
+  animation: shooting-star 17s ease-in 9s infinite;
+}
+
+@keyframes shooting-star {
+  0% {
+    opacity: 0;
+    transform: rotate(-28deg) translateX(0);
+  }
+  1% {
+    opacity: 1;
+  }
+  9% {
+    opacity: 0;
+    transform: rotate(-28deg) translateX(-55vw);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-28deg) translateX(-55vw);
+  }
+}

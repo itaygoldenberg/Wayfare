@@ -1,0 +1,41 @@
+.VacationList .list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Its colours, icon and hover live in index.css, shared with the other main buttons */
+.VacationList .add-button {
+  margin-bottom: 28px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.VacationList .cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+}
+
+.VacationList .empty {
+  padding: 70px 20px;
+  text-align: center;
+  color: var(--label-2);
+  border-radius: var(--radius-lg);
+}
+
+@media (max-width: 980px) {
+  .VacationList .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .VacationList .cards {
+    grid-template-columns: 1fr;
+  }
+}

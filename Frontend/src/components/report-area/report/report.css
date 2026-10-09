@@ -1,0 +1,620 @@
+.Report .report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.Report .report-header .button-link {
+  margin-bottom: 28px;
+  border-radius: 999px;
+  padding: 12px 22px;
+}
+
+/* ---------- The three headline figures ---------- */
+
+.Report .stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.Report .stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: page-in 0.7s var(--ease) backwards;
+  transition:
+    translate 0.5s var(--spring),
+    border-color 0.4s var(--ease);
+}
+
+.Report .stat:nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.Report .stat:nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.Report .stat:hover {
+  translate: 0 -3px;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* A soft colored glow in the corner of each tile */
+.Report .stat::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(rgba(94, 92, 230, 0.2), transparent 65%);
+  pointer-events: none;
+}
+
+.Report .stat:nth-child(2)::before {
+  background: radial-gradient(rgba(255, 55, 95, 0.16), transparent 65%);
+}
+
+.Report .stat:nth-child(3)::before {
+  background: radial-gradient(rgba(100, 210, 255, 0.16), transparent 65%);
+}
+
+/* Each figure's icon sits on a small glass tile in the top corner, tinted like the card's glow.
+   The tile is an element of its own, so its ::before and ::after can carry pictures that move on their own,
+   and the card's ::after stays free for an effect across the whole card. */
+.Report .stat-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--stat-color) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--stat-color) 38%, transparent);
+  box-shadow:
+    0 0 20px -6px var(--stat-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition:
+    border-color 0.4s var(--ease),
+    box-shadow 0.4s var(--ease);
+}
+
+/* Every moving picture is a ::before or ::after that only changes transform and opacity:
+   the browser can then move it without repainting the glass card, so the motion stays smooth */
+.Report .stat-icon::before,
+.Report .stat-icon::after,
+.Report .stat.total::after,
+.Report .stat.favorite::after,
+.Report .stat.liked::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.Report .stat:hover .stat-icon {
+  border-color: color-mix(in srgb, var(--stat-color) 70%, transparent);
+  box-shadow:
+    0 0 30px -4px var(--stat-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* ---------- Total likes: likes coming in ----------
+   A violet heart, in the colour of the card's glow. On hover it keeps beating, small hearts stream up out of it,
+   and a "+1" floats up beside it with every beat, like a counter ticking */
+.Report .stat.total {
+  --stat-color: #9b99ff;
+}
+
+.Report .stat.total .stat-icon::before {
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='v' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23d9d4ff'/%3E%3Cstop offset='1' stop-color='%237d6bff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='url(%23v)' stroke='%23ece9ff' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 22px no-repeat;
+}
+
+.Report .stat.total .stat-icon::after {
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Cg transform='translate(5 30) scale(0.38)'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%23b9b0ff'/%3E%3C/g%3E%3Cg transform='translate(29 34) scale(0.32)'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%239b8cff'/%3E%3C/g%3E%3Cg transform='translate(17 40) scale(0.28)'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%23d9d4ff'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+  opacity: 0;
+}
+
+/* The "+1", written by CSS itself, waiting beside the tile */
+.Report .stat.total::after {
+  content: "+1";
+  top: 22px;
+  right: 66px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #c9c2ff;
+  text-shadow: 0 0 10px rgba(155, 153, 255, 0.9);
+  opacity: 0;
+}
+
+.Report .stat.total:hover .stat-icon::before {
+  animation: beat 1.2s var(--ease) infinite;
+}
+
+.Report .stat.total:hover .stat-icon::after {
+  animation: hearts-rise 1.2s var(--ease) infinite;
+}
+
+.Report .stat.total:hover::after {
+  animation: plus-one 1.2s var(--ease) infinite;
+}
+
+@keyframes beat {
+  15% {
+    transform: scale(1.25);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+  60% {
+    transform: scale(1);
+  }
+}
+
+@keyframes hearts-rise {
+  0% {
+    transform: translateY(4px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+}
+
+@keyframes plus-one {
+  0%,
+  10% {
+    transform: translateY(6px) scale(0.6);
+    opacity: 0;
+  }
+  25% {
+    transform: translateY(0) scale(1.15);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-16px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* ---------- Most liked: the coronation ----------
+   A heart wearing a crown, the king of hearts. On hover the crown leaps up, flips once in the air
+   and lands back on the heart; the heart beats twice, and a ring of hearts bursts out of the tile across the card:
+   the likes that made it the winner. */
+.Report .stat.favorite {
+  --stat-color: #ff6b88;
+}
+
+/* The heart */
+.Report .stat.favorite .stat-icon::before {
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='h' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff8fa6'/%3E%3Cstop offset='1' stop-color='%23ff375f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='url(%23h)' stroke='%23ffd6e0' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E")
+    10px 15px / 24px no-repeat;
+  transform-origin: 50% 62%;
+}
+
+/* The crown, with a soft golden glow that is drawn once and never animated */
+.Report .stat.favorite .stat-icon::after {
+  top: 4px;
+  left: 14px;
+  width: 15px;
+  height: 11px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='1 2 22 16'%3E%3Cpath d='M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z' fill='%23ffd98a' stroke='%23fff3d6' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 0 4px rgba(255, 217, 138, 0.8));
+}
+
+/* The burst: a 160px picture of six hearts on a ring, centred on the tile, waiting small and unseen */
+.Report .stat.favorite::after {
+  top: -42px;
+  right: -42px;
+  width: 160px;
+  height: 160px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='40' fill='none' stroke='%23ff6b88' stroke-opacity='0.5' stroke-width='2'/%3E%3Cg transform='translate(129 73) scale(0.58)'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%23ff6b88'/%3E%3C/g%3E%3Cg transform='translate(101 121) scale(0.58)'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%23c89bff'/%3E%3C/g%3E%3Cg transform='translate(45 121) scale(0.58)'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%23ffd98a'/%3E%3C/g%3E%3Cg transform='translate(17 73) scale(0.58)'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%23ff6b88'/%3E%3C/g%3E%3Cg transform='translate(45 25) scale(0.58)'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%23c89bff'/%3E%3C/g%3E%3Cg transform='translate(101 25) scale(0.58)'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%23ffd98a'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+  opacity: 0;
+  transform: scale(0.3);
+}
+
+.Report .stat.favorite:hover .stat-icon::before {
+  animation: beat-twice 1.3s var(--ease);
+}
+
+.Report .stat.favorite:hover .stat-icon::after {
+  animation: coronation 1.3s var(--ease);
+}
+
+.Report .stat.favorite:hover::after {
+  animation: heart-burst 1.1s var(--ease);
+}
+
+@keyframes beat-twice {
+  18% {
+    transform: scale(1.28);
+  }
+  36% {
+    transform: scale(1);
+  }
+  54% {
+    transform: scale(1.16);
+  }
+  72% {
+    transform: scale(1);
+  }
+}
+
+@keyframes coronation {
+  0% {
+    transform: perspective(80px) translateY(0) rotateY(0) scale(1);
+  }
+  30% {
+    transform: perspective(80px) translateY(-16px) rotateY(180deg) scale(1.25);
+  }
+  55% {
+    transform: perspective(80px) translateY(-16px) rotateY(360deg) scale(1.25);
+  }
+  75% {
+    transform: perspective(80px) translateY(1px) rotateY(360deg)
+      scale(1.15, 0.8);
+  }
+  88%,
+  100% {
+    transform: perspective(80px) translateY(0) rotateY(360deg) scale(1);
+  }
+}
+
+@keyframes heart-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(0);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5) rotate(30deg);
+  }
+}
+
+/* ---------- Vacations with likes: the island ----------
+   A palm tree (the site's sign for vacations, as in the menu) with a like badge on the tile's corner.
+   On hover the palm sways in the breeze, the badge pops, and a plane takes off from the island
+   and flies slowly away above the card's title. */
+.Report .stat.liked {
+  --stat-color: #64d2ff;
+}
+
+/* The palm tree, swaying from the foot of its trunk */
+.Report .stat.liked .stat-icon::before {
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364d2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 8c0-2.76-2.46-5-5.5-5S2 5.24 2 8h2l1-1 1 1h4'/%3E%3Cpath d='M13 7.14A5.82 5.82 0 0 1 16.5 6c3.04 0 5.5 2.24 5.5 5h-3l-1-1-1 1h-3'/%3E%3Cpath d='M5.89 9.71c-2.15 2.15-2.3 5.47-.35 7.43l4.24-4.25.7-.7.71-.71 2.12-2.12c-1.95-1.96-5.27-1.8-7.42.35' fill='rgba(100,210,255,0.18)'/%3E%3Cpath d='M11 15.5c.5 2.5-.17 4.5-1 6.5h4c2-5.5-.5-12-1-14'/%3E%3C/svg%3E")
+    center / 24px no-repeat;
+  transform-origin: 50% 85%;
+}
+
+/* The plane with its trail. offset-path moves it along a curve (pixels inside the tile, like the logo's plane):
+   up from the island, left above the card's title, then up and out through the top edge. It turns to face the way it flies */
+.Report .stat.liked .stat-icon::after {
+  top: 0;
+  left: 0;
+  width: 46px;
+  height: 18px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='p' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff'/%3E%3Cstop offset='1' stop-color='%2364d2ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23p)' transform='rotate(90 12 12)' d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'/%3E%3C/svg%3E")
+      right center / 18px no-repeat,
+    linear-gradient(90deg, transparent, rgba(100, 210, 255, 0.75)) left center /
+      30px 3px no-repeat;
+  offset-path: path("M 22 22 C 16 0, -10 -8, -60 -10 S -160 -14, -240 -40");
+  offset-anchor: 80% 50%;
+  offset-rotate: auto;
+  opacity: 0;
+}
+
+/* The like badge on the tile's top-right corner, like a notification */
+.Report .stat.liked::after {
+  top: 9px;
+  right: 9px;
+  width: 18px;
+  height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10.5' fill='%23ff375f' stroke='%23ffffff' stroke-width='2'/%3E%3Cpath transform='translate(6.6 6.6) scale(0.45)' d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z' fill='%23ffffff'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  filter: drop-shadow(0 2px 6px rgba(255, 55, 95, 0.6));
+}
+
+.Report .stat.liked:hover .stat-icon::before {
+  animation: palm-sway 2.8s ease-in-out;
+}
+
+.Report .stat.liked:hover .stat-icon::after {
+  animation: plane-trip 2.8s cubic-bezier(0.4, 0, 0.25, 1);
+}
+
+.Report .stat.liked:hover::after {
+  animation: badge-pop 0.8s var(--spring);
+}
+
+@keyframes palm-sway {
+  15% {
+    transform: rotate(-9deg);
+  }
+  35% {
+    transform: rotate(7deg);
+  }
+  55% {
+    transform: rotate(-4deg);
+  }
+  75% {
+    transform: rotate(2deg);
+  }
+}
+
+/* Slow enough to see: the plane grows out of the island, hangs a moment, then flies the whole way */
+@keyframes plane-trip {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  12% {
+    offset-distance: 0%;
+    opacity: 1;
+    transform: scale(1);
+  }
+  20% {
+    offset-distance: 4%;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes badge-pop {
+  35% {
+    transform: scale(1.45) rotate(-12deg);
+  }
+  60% {
+    transform: scale(0.9) rotate(6deg);
+  }
+  80% {
+    transform: scale(1.08);
+  }
+}
+
+.Report .stat-label {
+  padding-right: 52px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--label-3);
+}
+
+.Report .stat-value {
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The destination name keeps clear of the icon; on a narrow tile it wraps instead of running under it */
+.Report .stat-value.text {
+  padding-right: 52px;
+  font-size: 1.35rem;
+  line-height: 1.3;
+  margin-top: 6px;
+}
+
+.Report .stat-value small {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--label-3);
+}
+
+.Report .stat-note {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--pink);
+}
+
+/* ---------- The chart: a leaderboard of thin bars, most liked on top ---------- */
+
+.Report .chart-card {
+  padding: 22px 22px 16px;
+  border-radius: var(--radius-lg);
+}
+
+/* The chart's title, with a bar-chart icon in the logo's gradient */
+.Report .chart-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.Report .chart-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.Report .chart-head h3::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background: var(--accent);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg fill='none' stroke='black' stroke-width='2'%3E%3Cpath d='M3 3v16a2 2 0 0 0 2 2h16'/%3E%3Cpath d='M18 17V9'/%3E%3Cpath d='M13 17V5'/%3E%3Cpath d='M8 17v-3'/%3E%3C/g%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.Report .chart-head span {
+  font-size: 0.8rem;
+  color: var(--label-3);
+}
+
+/* Narrower than its chart (a phone), the card lets the chart scroll sideways, so the names never squeeze.
+   The chart needs 760px and the page takes 100px around it, so from 870px wide it always fits and there is no scrolling:
+   otherwise recharts, rounding the width up by a fraction of a pixel, would show a scrollbar with nothing to scroll. */
+.Report .chart-scroll {
+  scrollbar-width: thin;
+}
+
+@media (max-width: 869px) {
+  .Report .chart-scroll {
+    overflow-x: auto;
+  }
+}
+
+/* The colours run across the whole chart like a spectrum, sky to indigo to violet to pink, the logo's colours:
+   the gradient is laid over the chart's full width, so each bar takes the colour of where it stands */
+.Report .spectrum-sky {
+  stop-color: var(--sky);
+}
+
+.Report .spectrum-indigo {
+  stop-color: #5e5ce6;
+}
+
+.Report .spectrum-violet {
+  stop-color: var(--dusk);
+}
+
+.Report .spectrum-pink {
+  stop-color: #ff6ec7;
+}
+
+/* Each bar is bright at the top and melts into the glass at its base, through a mask (white shows, dark hides) */
+.Report .fade-top {
+  stop-color: #ffffff;
+}
+
+.Report .fade-bottom {
+  stop-color: #ffffff;
+  stop-opacity: 0.42;
+}
+
+.Report .fade-fill {
+  fill: url(#fade-gradient);
+}
+
+.Report .recharts-bar-rectangle path {
+  fill: url(#spectrum-gradient);
+  mask: url(#bar-fade);
+}
+
+/* Focus mode: pointing at a bar fades the rest to grey glass, and the bar rises a little with a glow in its own colour.
+   The glow sits on the bar's group, so the fade mask does not cut it off */
+.Report .recharts-bar-rectangle {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition:
+    opacity 0.35s var(--ease),
+    filter 0.35s var(--ease),
+    transform 0.45s var(--spring);
+}
+
+.Report .recharts-bar-rectangles:hover .recharts-bar-rectangle {
+  opacity: 0.25;
+  filter: saturate(0.4);
+}
+
+.Report .recharts-bar-rectangles .recharts-bar-rectangle:hover {
+  opacity: 1;
+  filter: brightness(1.2) drop-shadow(0 0 12px rgba(191, 90, 242, 0.6))
+    drop-shadow(0 0 3px rgba(100, 210, 255, 0.7));
+  transform: translateY(-4px);
+}
+
+/* A beam of light falls from the top onto the hovered column */
+.Report .beam-top {
+  stop-color: var(--sky);
+  stop-opacity: 0.11;
+}
+
+.Report .beam-bottom {
+  stop-color: var(--dusk);
+  stop-opacity: 0;
+}
+
+.Report .recharts-tooltip-cursor {
+  fill: url(#beam-gradient);
+}
+
+/* The average: a dashed line across the chart, with its value at the right end */
+.Report .recharts-reference-line line {
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-dasharray: 6 6;
+}
+
+.Report .recharts-reference-line .recharts-label {
+  fill: var(--label-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* Quiet dashed guide lines and a thin baseline */
+.Report .recharts-cartesian-grid line {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-dasharray: 4 8;
+}
+
+.Report .recharts-cartesian-axis-line {
+  stroke: rgba(255, 255, 255, 0.14);
+}
+
+.Report .recharts-cartesian-axis-tick-value {
+  fill: var(--label-2);
+  font-size: 12px;
+}
+
+/* Clicking the chart focuses its drawing or one of its layers, and the browser would draw a white frame around it.
+   :focus-visible is true only for keyboard focus, so the frame is hidden for the mouse but kept for the Tab key */
+.Report .chart-scroll:focus:not(:focus-visible),
+.Report .recharts-wrapper :focus:not(:focus-visible) {
+  outline: none;
+}
+
+@media (max-width: 760px) {
+  .Report .stats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,1 +1,1187 @@
-﻿
+/* ---------- Design tokens: liquid glass on a night sky ---------- */
+
+:root {
+  --bg: #05060a;
+  --label: #f5f5f7;
+  --label-2: rgba(235, 235, 245, 0.68);
+  --label-3: rgba(235, 235, 245, 0.42);
+
+  /* Twilight: from the sky at dusk to violet, with a warm sunset for contrast */
+  --sky: #64d2ff;
+  --dusk: #bf5af2;
+  --pink: #ff375f;
+  --green: #30d158;
+  --gold: #ffd98a;
+  --accent: linear-gradient(135deg, #64d2ff 0%, #5e5ce6 52%, #bf5af2 100%);
+
+  --glass: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.035)
+  );
+  --glass-solid: rgba(255, 255, 255, 0.06);
+  --glass-hover: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-blur: blur(28px) saturate(180%);
+  --glass-shine:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+  --shadow:
+    0 24px 60px -24px rgba(0, 0, 0, 0.85), 0 2px 10px rgba(0, 0, 0, 0.35);
+  --glow:
+    0 10px 30px -10px rgba(94, 92, 230, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  --glow-strong:
+    0 16px 40px -10px rgba(94, 92, 230, 1), 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+
+  --radius-lg: 28px;
+  --radius: 20px;
+  --radius-sm: 14px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* A spring that overshoots a little and settles, like iOS */
+  --spring: linear(
+    0,
+    0.009,
+    0.035 2.1%,
+    0.141,
+    0.281 6.7%,
+    0.723 12.9%,
+    0.938 16.7%,
+    1.017,
+    1.077,
+    1.121,
+    1.149 24.3%,
+    1.159,
+    1.163,
+    1.161,
+    1.154 29.9%,
+    1.129 32.8%,
+    1.051 39.6%,
+    1.017 43.1%,
+    0.991,
+    0.977 51%,
+    0.974 53.8%,
+    0.975 57.1%,
+    0.997 69.8%,
+    1.003 76.9%,
+    1
+  );
+
+  --font-display: "Inter Tight", "Inter", -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Inter", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+
+  color-scheme: dark;
+  font-family: var(--font-body);
+  font-feature-settings: "cv11", "ss01";
+  color: var(--label);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom properties that can be animated (used by the rotating rim light) */
+@property --angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* No background here: :root paints the night, and a body background would cover the aurora below */
+body {
+  margin: 0;
+}
+
+/* The aurora: five slow, blurred lights behind every page.
+   They wander along a long path and breathe in and out, so the sky never looks the same twice. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -25%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      34% 30% at 20% 22%,
+      rgba(94, 92, 230, 0.5),
+      transparent 70%
+    ),
+    radial-gradient(
+      30% 26% at 80% 14%,
+      rgba(191, 90, 242, 0.4),
+      transparent 70%
+    ),
+    radial-gradient(
+      40% 34% at 64% 86%,
+      rgba(100, 210, 255, 0.28),
+      transparent 70%
+    ),
+    radial-gradient(
+      26% 22% at 14% 84%,
+      rgba(255, 120, 90, 0.18),
+      transparent 70%
+    ),
+    radial-gradient(
+      22% 18% at 50% 50%,
+      rgba(255, 55, 95, 0.12),
+      transparent 70%
+    );
+  filter: blur(46px);
+  animation:
+    drift 48s ease-in-out infinite alternate,
+    breathe 9s ease-in-out infinite alternate;
+}
+
+/* A second aurora, lower down: teal and rose lights that drift the opposite way to the first,
+   so the two layers keep crossing and the sky never sits still */
+#root::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      30% 26% at 30% 70%,
+      rgba(48, 209, 190, 0.2),
+      transparent 70%
+    ),
+    radial-gradient(
+      28% 24% at 72% 58%,
+      rgba(255, 55, 140, 0.16),
+      transparent 70%
+    ),
+    radial-gradient(
+      36% 28% at 50% 100%,
+      rgba(94, 92, 230, 0.3),
+      transparent 70%
+    );
+  filter: blur(60px);
+  animation:
+    drift-back 38s ease-in-out infinite alternate,
+    breathe 12s ease-in-out -4s infinite alternate;
+}
+
+@keyframes drift-back {
+  50% {
+    transform: translate3d(-6%, -5%, 0) scale(1.15);
+  }
+  100% {
+    transform: translate3d(5%, -8%, 0) rotate(-10deg) scale(1.05);
+  }
+}
+
+/* A soft vignette that darkens the edges and gives the page depth */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    130% 100% at 50% 35%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.45)
+  );
+}
+
+@keyframes drift {
+  33% {
+    transform: translate3d(5%, -4%, 0) rotate(8deg) scale(1.12);
+  }
+  66% {
+    transform: translate3d(-4%, 3%, 0) rotate(-6deg) scale(1.04);
+  }
+  100% {
+    transform: translate3d(3%, 5%, 0) rotate(12deg) scale(1.16);
+  }
+}
+
+@keyframes breathe {
+  from {
+    opacity: 0.72;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+::selection {
+  background: rgba(94, 92, 230, 0.45);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  line-height: 1.15;
+}
+
+a {
+  color: var(--sky);
+}
+
+:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 3px;
+}
+
+/* Text that people type may hold one very long word, like a pasted link:
+   anywhere breaks it onto the next line instead of letting it run out of its box */
+.VacationCard h3,
+.VacationCard p,
+.AskWayfare .question,
+.AskWayfare .question-bubble,
+.AskWayfare .answer-text,
+.Report .stat-value {
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Glass surfaces: one recipe for every panel ---------- */
+
+.Header,
+.form-card,
+.ai-card,
+.Report .chart-card,
+.Report .stat,
+.VacationCard,
+.VacationList .empty,
+.Page404 {
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shine), var(--shadow);
+}
+
+/* ---------- Buttons: a gradient with a light sweep that crosses on hover ---------- */
+/* A download link (.button-link) wears the same look as a button */
+
+button,
+.button-link {
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 11px 20px;
+  color: #fff;
+  background:
+    linear-gradient(
+        110deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.4) 50%,
+        transparent 65%
+      )
+      130% 0 / 250% 100% no-repeat,
+    var(--accent);
+  box-shadow: var(--glow);
+  transition:
+    transform 0.4s var(--spring),
+    box-shadow 0.3s var(--ease),
+    filter 0.3s var(--ease),
+    background-position 0.9s var(--ease),
+    background-color 0.3s var(--ease);
+}
+
+button:hover:not(:disabled),
+.button-link:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: var(--glow-strong);
+  background-position:
+    -30% 0,
+    0 0;
+}
+
+button:active:not(:disabled),
+.button-link:active {
+  transform: scale(0.96);
+  transition-duration: 0.12s;
+}
+
+.button-link {
+  display: inline-block;
+  text-decoration: none;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---------- Page headings ---------- */
+
+.page-title {
+  font-size: clamp(2rem, 4.2vw, 3.1rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  margin-bottom: 8px;
+  background: linear-gradient(180deg, #ffffff 30%, rgba(235, 235, 245, 0.7));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.page-subtitle {
+  color: var(--label-2);
+  font-size: 1.02rem;
+  margin: 0 0 28px;
+}
+
+/* Every page rises into place when it opens */
+main > * {
+  animation: page-in 0.8s var(--ease) backwards;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+    filter: blur(8px);
+  }
+}
+
+/* ---------- Forms ---------- */
+
+.form-card {
+  position: relative;
+  max-width: 460px;
+  margin: 32px auto;
+  padding: 36px;
+  border-radius: var(--radius-lg);
+}
+
+/* While you type, a light travels around the card's rim */
+.form-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--angle),
+    transparent 0 55%,
+    rgba(100, 210, 255, 0.95) 70%,
+    rgba(191, 90, 242, 0.95) 82%,
+    transparent 95%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s var(--ease);
+  animation: rim 4s linear infinite;
+}
+
+.form-card:focus-within::before {
+  opacity: 1;
+}
+
+@keyframes rim {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.form-card.wide {
+  max-width: 640px;
+}
+
+.form-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-card label {
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--label-2);
+  margin-top: 12px;
+  transition: color 0.3s;
+}
+
+.form-card label:has(+ input:focus),
+.form-card label:has(+ textarea:focus) {
+  color: var(--sky);
+}
+
+.form-card input,
+.form-card textarea,
+.ai-form input {
+  font: inherit;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--label);
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s,
+    background 0.25s;
+}
+
+.form-card input:hover,
+.form-card textarea:hover,
+.ai-form input:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.form-card input::placeholder,
+.form-card textarea::placeholder,
+.ai-form input::placeholder {
+  color: var(--label-3);
+}
+
+.form-card input:focus,
+.form-card textarea:focus,
+.ai-form input:focus {
+  outline: none;
+  border-color: var(--sky);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 4px rgba(100, 210, 255, 0.16);
+}
+
+.form-card textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Our own "Choose image" button. The real file input lies invisibly on top of it,
+   so a click anywhere opens the file picker, and the browser's own text (in its own language) is never shown.
+   flex-wrap: on a narrow phone the file name moves under the button instead of being cut. */
+.form-card .file-picker {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.05);
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+
+.form-card .file-picker input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.form-card .file-picker:focus-within {
+  border-color: var(--sky);
+  box-shadow: 0 0 0 4px rgba(100, 210, 255, 0.16);
+}
+
+.form-card .file-button {
+  flex-shrink: 0;
+  font-weight: 600;
+  padding: 8px 14px;
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  background: var(--glass-hover);
+  color: var(--label);
+  transition: background 0.25s;
+}
+
+.form-card .file-picker:hover .file-button {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.form-card .file-name {
+  color: var(--label-2);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-card button {
+  margin-top: 22px;
+  padding: 13px 20px;
+}
+
+/* The Login and Register forms carry the same icons as the header on their main buttons */
+.form-card button.icon-login::before,
+.form-card button.icon-register::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: -3px;
+  background: currentColor;
+  mask: var(--icon) center / contain no-repeat;
+  transition: transform 0.45s var(--spring);
+}
+
+.form-card button.icon-login {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4'/%3E%3Cpath d='m10 17 5-5-5-5'/%3E%3Cpath d='M15 12H3'/%3E%3C/svg%3E");
+}
+
+.form-card button.icon-register {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M19 8v6'/%3E%3Cpath d='M22 11h-6'/%3E%3C/svg%3E");
+}
+
+.form-card button.icon-login:hover::before {
+  transform: translateX(4px) scale(1.1);
+}
+
+.form-card button.icon-register:hover::before {
+  transform: scale(1.2) rotate(-10deg);
+}
+
+/* ---------- The main buttons: soft at rest, a comet of light circling the rim on hover ---------- */
+
+/* Register (in the header and on its page), the Login page's button, the 404 page's button, the two AI buttons
+   and the admin's buttons: a softer gradient than the other buttons. It is wider than the button, so on hover it can flow sideways. */
+.AuthMenu a.register-link,
+.form-card button.icon-login,
+.form-card button.icon-register,
+.Page404 a.back-button,
+.ai-form button.icon-ask,
+.ai-form button.icon-recommend,
+.VacationList a.add-button,
+.form-card button.icon-add,
+.form-card button.icon-save,
+.Report a.button-link,
+.VacationCard .admin-actions button.edit {
+  position: relative;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(
+      120deg,
+      rgba(100, 210, 255, 0.7),
+      rgba(94, 92, 230, 0.75) 40%,
+      rgba(191, 90, 242, 0.7) 70%,
+      rgba(100, 210, 255, 0.7)
+    )
+    0 0 / 250% 100%;
+  box-shadow:
+    0 8px 22px -14px rgba(94, 92, 230, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition:
+    background-position 1.2s var(--ease),
+    box-shadow 0.4s var(--ease),
+    filter 0.4s var(--ease),
+    transform 0.4s var(--spring);
+}
+
+/* The header's Login: tinted glass */
+.AuthMenu a[href="/login"] {
+  --rim: var(--sky);
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  transition:
+    color 0.3s var(--ease),
+    background-color 0.3s var(--ease),
+    border-color 0.3s var(--ease),
+    box-shadow 0.4s var(--ease),
+    transform 0.4s var(--spring);
+}
+
+.AuthMenu a[href="/login"].active {
+  color: var(--label);
+  background: rgba(100, 210, 255, 0.12);
+  border-color: rgba(100, 210, 255, 0.35);
+}
+
+/* The comet: a ring drawn with a conic gradient, masked so that only the button's rim shows.
+   On hover it fades in and circles the button, turned by the animated --angle. */
+.AuthMenu a.register-link::after,
+.AuthMenu a[href="/login"]::after,
+.form-card button.icon-login::after,
+.form-card button.icon-register::after,
+.Page404 a.back-button::after,
+.ai-form button.icon-ask::after,
+.ai-form button.icon-recommend::after,
+.AuthMenu button::after,
+.VacationList a.add-button::after,
+.form-card button.icon-add::after,
+.form-card button.icon-save::after,
+.Report a.button-link::after,
+.VacationCard .admin-actions button::after,
+.form-card .file-picker::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--angle),
+    transparent 0 60%,
+    var(--rim, var(--dusk)) 78%,
+    #fff 86%,
+    transparent 94%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+}
+
+.AuthMenu a.register-link:hover,
+.form-card button.icon-login:hover:not(:disabled),
+.form-card button.icon-register:hover:not(:disabled),
+.Page404 a.back-button:hover,
+.ai-form button.icon-ask:hover:not(:disabled),
+.ai-form button.icon-recommend:hover:not(:disabled),
+.VacationList a.add-button:hover,
+.form-card button.icon-add:hover:not(:disabled),
+.form-card button.icon-save:hover:not(:disabled),
+.Report a.button-link:hover,
+.VacationCard .admin-actions button.edit:hover:not(:disabled) {
+  color: #fff;
+  background-position: 100% 0;
+  filter: saturate(1.35) brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 36px -14px rgba(191, 90, 242, 0.75),
+    0 0 24px -6px rgba(100, 210, 255, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.AuthMenu a[href="/login"]:hover {
+  color: #fff;
+  background-color: rgba(100, 210, 255, 0.14);
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 26px -12px rgba(100, 210, 255, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.AuthMenu a.register-link:hover::after,
+.AuthMenu a[href="/login"]:hover::after,
+.form-card button.icon-login:hover::after,
+.form-card button.icon-register:hover::after,
+.Page404 a.back-button:hover::after,
+.ai-form button.icon-ask:hover:not(:disabled)::after,
+.ai-form button.icon-recommend:hover:not(:disabled)::after,
+.AuthMenu button:hover::after,
+.VacationList a.add-button:hover::after,
+.form-card button.icon-add:hover:not(:disabled)::after,
+.form-card button.icon-save:hover:not(:disabled)::after,
+.Report a.button-link:hover::after,
+.VacationCard .admin-actions button:hover:not(:disabled)::after,
+.form-card .file-picker:hover::after {
+  opacity: 1;
+  animation: comet 2s linear infinite;
+}
+
+/* Logout keeps its rose hover (auth-menu.css) and gains the circling light, in rose */
+.AuthMenu button {
+  --rim: var(--pink);
+  position: relative;
+}
+
+/* Ask: a speech bubble with a question mark (a question) and a plane taking off from it (about the trips).
+   Get recommendation: a destination pin with the AI sparkle (a place the AI recommends). */
+.ai-form button.icon-ask::before,
+.ai-form button.icon-recommend::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: -4px;
+  background: currentColor;
+}
+
+.ai-form button.icon-ask::before {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 15.5A8 8 0 1 0 4.2 15.1L2.6 20.4l5.3-1.6A8 8 0 0 0 12 19.8'/%3E%3Cpath d='M8.6 8.6a2.3 2.3 0 0 1 4.4.8c0 1.5-2.3 2.3-2.3 2.3'/%3E%3Cpath d='M10.7 14.6h.01'/%3E%3C/g%3E%3Cpath transform='translate(12.6 11.8) scale(.48) rotate(45 12 12)' d='M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z' fill='black'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.ai-form button.icon-recommend::before {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 10.5c0 4.6-5.2 9.3-6.9 10.8a1 1 0 0 1-1.2 0C8.2 19.8 3 15.1 3 10.5a7.5 7.5 0 0 1 15 0'/%3E%3Ccircle cx='10.5' cy='10.5' r='2.6'/%3E%3C/g%3E%3Cpath transform='translate(14 -0.4) scale(.42)' d='M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z' fill='black'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+/* On hover the question bubble pops up and wobbles, and the pin drops onto the map and lands with a small squash */
+.ai-form button.icon-ask:hover:not(:disabled)::before {
+  animation: bubble-pop 0.7s var(--ease);
+}
+
+.ai-form button.icon-recommend:hover:not(:disabled)::before {
+  transform-origin: 50% 100%;
+  animation: pin-drop 0.75s var(--ease);
+}
+
+@keyframes bubble-pop {
+  30% {
+    transform: translateY(-3px) scale(1.18) rotate(-10deg);
+  }
+  55% {
+    transform: translateY(-1px) scale(1.08) rotate(7deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+}
+
+@keyframes pin-drop {
+  30% {
+    transform: translateY(-6px);
+  }
+  55% {
+    transform: translateY(1px) scale(1.15, 0.85);
+  }
+  75% {
+    transform: translateY(-1px) scale(0.97, 1.04);
+  }
+}
+
+/* While the AI is thinking, the icon breathes */
+.ai-form button.icon-ask:disabled::before,
+.ai-form button.icon-recommend:disabled::before {
+  animation: thinking 0.9s ease-in-out infinite alternate;
+}
+
+/* ---------- The admin's buttons: an icon on each, which moves on hover ---------- */
+
+/* Delete keeps its rose (vacation-card.css) with a rose comet; the image picker gets a sky one */
+.VacationCard .admin-actions button.delete {
+  --rim: var(--pink);
+  position: relative;
+}
+
+.form-card .file-picker {
+  --rim: var(--sky);
+}
+
+.VacationList a.add-button::before,
+.form-card button.icon-add::before,
+.form-card button.icon-save::before,
+.Report a.button-link::before,
+.VacationCard .admin-actions button::before,
+.form-card .file-button::before,
+.form-card .back-link::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: -3px;
+  background: currentColor;
+  mask: var(--icon) center / contain no-repeat;
+  transition: transform 0.45s var(--spring);
+}
+
+.VacationList a.add-button,
+.form-card button.icon-add {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M8 12h8'/%3E%3Cpath d='M12 8v8'/%3E%3C/svg%3E");
+}
+
+.form-card button.icon-save {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'/%3E%3Cpath d='M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7'/%3E%3Cpath d='M7 3v4a1 1 0 0 0 1 1h7'/%3E%3C/svg%3E");
+}
+
+/* Download CSV shows the real Excel logo, in a light Excel green, with a download badge. It is a picture in its own colours, not a mask */
+.Report a.button-link::before {
+  width: 20px;
+  height: 20px;
+  vertical-align: -5px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='scale(0.86)'%3E%3Cpath fill='%235be39a' d='M23 1.5q.41 0 .7.3.3.29.3.7v19q0 .41-.3.7-.29.3-.7.3H7q-.41 0-.7-.3-.3-.29-.3-.7V18H1q-.41 0-.7-.3-.3-.29-.3-.7V7q0-.41.3-.7Q.58 6 1 6h5V2.5q0-.41.3-.7.29-.3.7-.3zM6 13.28l1.42 2.66h2.14l-2.38-3.87 2.34-3.8H7.46l-1.3 2.4-.05.08-.04.09-.64-1.28-.66-1.29H2.59l2.27 3.82-2.48 3.85h2.16zM14.25 21v-3H7.5v3zm0-4.5v-3.75H12v3.75zm0-5.25V7.5H12v3.75zm0-5.25V3H7.5v3zm8.25 15v-3h-6.75v3zm0-4.5v-3.75h-6.75v3.75zm0-5.25V7.5h-6.75v3.75zm0-5.25V3h-6.75v3Z'/%3E%3C/g%3E%3Ccircle cx='18.3' cy='18.3' r='5.3' fill='%231d8f50' stroke='%23ffffff' stroke-width='1.3'/%3E%3Cpath d='M18.3 15.6v5M16.3 18.6l2 2 2-2' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: none;
+}
+
+.VacationCard .admin-actions button.edit {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z'/%3E%3Cpath d='m15 5 4 4'/%3E%3C/svg%3E");
+}
+
+.VacationCard .admin-actions button.delete {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18'/%3E%3Cpath d='M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6'/%3E%3Cpath d='M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2'/%3E%3Cpath d='M10 11v6'/%3E%3Cpath d='M14 11v6'/%3E%3C/svg%3E");
+}
+
+.form-card .file-button {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E");
+}
+
+.form-card .back-link {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 19-7-7 7-7'/%3E%3Cpath d='M19 12H5'/%3E%3C/svg%3E");
+}
+
+/* The plus turns, the disk settles, the arrow drops, the pencil writes, the bin shakes, the picture tilts */
+.VacationList a.add-button:hover::before,
+.form-card button.icon-add:hover:not(:disabled)::before {
+  transform: rotate(90deg) scale(1.1);
+}
+
+.form-card button.icon-save:hover:not(:disabled)::before {
+  transform: translateY(1px) scale(1.15);
+}
+
+.Report a.button-link:hover::before {
+  transform: translateY(3px);
+}
+
+.VacationCard .admin-actions button.edit:hover::before {
+  transform: rotate(-18deg) translateX(-1px);
+}
+
+.VacationCard .admin-actions button.delete:hover::before {
+  animation: bin-shake 0.5s var(--ease);
+}
+
+.form-card .file-picker:hover .file-button::before {
+  transform: rotate(-8deg) scale(1.15);
+}
+
+@keyframes bin-shake {
+  25% {
+    transform: rotate(-12deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  75% {
+    transform: rotate(-6deg);
+  }
+}
+
+@keyframes thinking {
+  to {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes comet {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.form-card .form-footer {
+  text-align: center;
+  color: var(--label-2);
+  margin: 20px 0 0;
+}
+
+.form-card .date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-card .date-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-card .hint {
+  font-size: 0.82rem;
+  color: var(--label-3);
+}
+
+.form-card .image-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin-top: 10px;
+  border: 1px solid var(--glass-border);
+  animation: page-in 0.6s var(--ease);
+}
+
+.form-card .back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--label-2);
+  text-decoration: none;
+  transition:
+    color 0.2s,
+    translate 0.3s var(--ease);
+}
+
+.form-card .back-link:hover {
+  color: var(--label);
+  translate: -3px 0;
+}
+
+/* ---------- The two AI pages ---------- */
+
+.ai-page {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.ai-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+
+/* The text box on both AI pages */
+.ai-form input {
+  flex: 1;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  background: var(--glass-solid);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.ai-card {
+  position: relative;
+  padding: 28px 30px;
+  margin-bottom: 18px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  animation: page-in 0.6s var(--ease) backwards;
+}
+
+/* A comet of light that keeps circling the card's rim, like the footer's pop-up cards:
+   a conic gradient turned by the animated --angle, masked so that only the rim shows */
+.ai-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--angle),
+    transparent 0 62%,
+    var(--dusk) 78%,
+    #fff 86%,
+    transparent 94%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  animation: comet 3.2s linear infinite;
+}
+
+.ai-card h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+/* The flag beside the place in the advisor's title, sized to the title's text */
+.ai-card h3 .Flag {
+  height: 0.7em;
+}
+
+.ai-card h4 {
+  margin: 20px 0 6px;
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sky);
+}
+
+.ai-card p {
+  margin: 0 0 4px;
+  line-height: 1.7;
+  color: var(--label-2);
+}
+
+/* The section's emoji, at a size that reads next to the small capital title */
+.ai-card h4 .emoji {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+  vertical-align: -2px;
+}
+
+/* A list item: the AI starts it with its own emoji, so it needs no bullet */
+.ai-card p.item {
+  margin: 6px 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition:
+    background 0.3s var(--ease),
+    translate 0.4s var(--spring);
+}
+
+.ai-card p.item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  translate: 3px 0;
+}
+
+.ai-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-skeleton span {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(100, 210, 255, 0.22),
+    rgba(255, 255, 255, 0.05)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+
+.ai-skeleton span:nth-child(2) {
+  width: 84%;
+}
+
+.ai-skeleton span:nth-child(3) {
+  width: 58%;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- Toasts (izitoast), restyled as glass ---------- */
+
+/* Toasts appear below the floating header, lined up with its right edge, instead of covering its buttons */
+.iziToast-wrapper-topRight {
+  top: 76px;
+  right: max(0px, calc((100vw - 1230px) / 2));
+}
+
+/* On a tablet the header has two rows, so the toasts start lower */
+@media (max-width: 1040px) {
+  .iziToast-wrapper-topRight {
+    top: 126px;
+  }
+}
+
+.iziToast.iziToast-theme-dark.wayfare-toast {
+  overflow: hidden;
+  padding-left: 6px;
+  font-family: var(--font-body);
+  background: rgba(22, 24, 34, 0.82);
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shine), var(--shadow);
+}
+
+.iziToast.iziToast-theme-dark.wayfare-toast::after {
+  display: none;
+}
+
+.iziToast.wayfare-toast .iziToast-message {
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--label);
+}
+
+/* The icon sits in a small glowing circle in the toast's color */
+.iziToast.iziToast-theme-dark.wayfare-toast .iziToast-icon {
+  border-radius: 50%;
+  background-size: 13px;
+  background-color: var(--toast-color);
+  box-shadow: 0 0 14px var(--toast-color);
+}
+
+.iziToast.wayfare-toast.iziToast-color-green {
+  --toast-color: var(--green);
+  border-color: rgba(48, 209, 88, 0.3);
+}
+
+.iziToast.wayfare-toast.iziToast-color-red {
+  --toast-color: var(--pink);
+  border-color: rgba(255, 55, 95, 0.3);
+}
+
+/* The close button is a <button>, so it must not take the site's gradient button look */
+.iziToast.wayfare-toast .iziToast-close {
+  border-radius: 0;
+  box-shadow: none;
+  transition: opacity 0.25s var(--ease);
+}
+
+.iziToast.wayfare-toast .iziToast-close:hover:not(:disabled) {
+  filter: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.iziToast.wayfare-toast .iziToast-progressbar {
+  background: transparent;
+}
+
+.iziToast.wayfare-toast .iziToast-progressbar > div {
+  background: var(--toast-color);
+}
+
+/* On a phone izitoast moves the toasts to topCenter, where the two-row header sits,
+   so they rise from the bottom instead, clear of the screen's edges */
+@media (max-width: 567px) {
+  .iziToast-wrapper-topCenter {
+    top: auto;
+    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .iziToast.wayfare-toast {
+    margin: 4px 0;
+  }
+}
+
+/* ---------- Small screens and reduced motion ---------- */
+
+@media (max-width: 560px) {
+  .form-card {
+    padding: 26px 20px;
+  }
+
+  .form-card .date-row,
+  .ai-form {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,249 @@
+.AuthMenu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.AuthMenu a {
+  font-weight: 500;
+  font-size: 0.92rem;
+  color: var(--label-2);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  transition:
+    background 0.25s var(--ease),
+    color 0.25s var(--ease);
+}
+
+.AuthMenu a:hover,
+.AuthMenu a.active {
+  color: var(--label);
+  background: var(--glass-hover);
+}
+
+/* Its colours and hover live in index.css, shared with the Login and Register form buttons */
+.AuthMenu a.register-link {
+  font-weight: 600;
+}
+
+.AuthMenu .greeting {
+  color: var(--label-3);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.AuthMenu .greeting strong {
+  color: var(--label);
+  font-weight: 600;
+}
+
+/* The Admin badge: a crown in the logo's gradient on a violet glass chip, with a gleam that crosses it every few seconds */
+.AuthMenu .admin-badge {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 10px 3px 7px;
+  border-radius: 999px;
+  color: #e4dcff;
+  background: linear-gradient(
+    135deg,
+    rgba(100, 210, 255, 0.16),
+    rgba(94, 92, 230, 0.2) 50%,
+    rgba(191, 90, 242, 0.24)
+  );
+  border: 1px solid rgba(191, 90, 242, 0.45);
+  box-shadow:
+    0 0 16px -4px rgba(191, 90, 242, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-shadow: 0 0 10px rgba(191, 90, 242, 0.7);
+  cursor: default;
+  transition:
+    box-shadow 0.4s var(--ease),
+    transform 0.4s var(--spring);
+}
+
+.AuthMenu .admin-badge::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(100, 210, 255, 0.8));
+  transition: transform 0.45s var(--spring);
+}
+
+/* The gleam: a light band parked outside the chip, which crosses it and then rests */
+.AuthMenu .admin-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+      110deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.45) 50%,
+      transparent 65%
+    )
+    110% 0 / 250% 100% no-repeat;
+  animation: badge-gleam 4s var(--ease) infinite;
+}
+
+@keyframes badge-gleam {
+  35%,
+  100% {
+    background-position: -10% 0;
+  }
+}
+
+.AuthMenu .admin-badge:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 22px -2px rgba(191, 90, 242, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* On hover the crown tips its hat */
+.AuthMenu .admin-badge:hover::before {
+  transform: rotate(-14deg) scale(1.2);
+}
+
+.AuthMenu button {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--glass-hover);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  font-weight: 500;
+}
+
+.AuthMenu button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* On a smaller laptop screen "Hello," steps aside to make room; the full name always stays */
+@media (max-width: 1180px) {
+  .AuthMenu .hello {
+    display: none;
+  }
+}
+
+/* The spec requires the full name on every screen size, so on a phone it shrinks instead of hiding */
+@media (max-width: 560px) {
+  .AuthMenu {
+    gap: 8px;
+  }
+
+  .AuthMenu .greeting {
+    font-size: 0.78rem;
+    gap: 6px;
+  }
+
+  .AuthMenu .hello,
+  .AuthMenu .admin-badge {
+    display: none;
+  }
+
+  .AuthMenu button,
+  .AuthMenu a {
+    padding: 7px 11px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ---------- Icons and hover effects for Login, Register and Logout ---------- */
+
+/* Each button carries a line icon, drawn as a mask so it takes the text colour */
+.AuthMenu a::before,
+.AuthMenu button::before {
+  content: "";
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin-right: 7px;
+  vertical-align: -2px;
+  background: currentColor;
+  mask: var(--icon) center / contain no-repeat;
+  transition: transform 0.45s var(--spring);
+}
+
+.AuthMenu a[href="/login"] {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4'/%3E%3Cpath d='m10 17 5-5-5-5'/%3E%3Cpath d='M15 12H3'/%3E%3C/svg%3E");
+}
+
+.AuthMenu a.register-link {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M19 8v6'/%3E%3Cpath d='M22 11h-6'/%3E%3C/svg%3E");
+}
+
+.AuthMenu button {
+  --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/%3E%3Cpath d='m16 17 5-5-5-5'/%3E%3Cpath d='M21 12H9'/%3E%3C/svg%3E");
+}
+
+/* Login and Register get their colours and the circling light on hover from index.css;
+   here only their icons move: the arrow steps in, and the new-user icon hops */
+.AuthMenu a[href="/login"]:hover::before {
+  transform: translateX(3px) scale(1.12);
+}
+
+.AuthMenu a.register-link:hover::before {
+  transform: scale(1.2) rotate(-10deg);
+}
+
+/* Logout: the button warms to a soft rose, and the arrow heads out the door */
+.AuthMenu button {
+  transition:
+    background 0.3s var(--ease),
+    border-color 0.3s var(--ease),
+    color 0.3s var(--ease),
+    box-shadow 0.3s var(--ease),
+    transform 0.4s var(--spring);
+}
+
+.AuthMenu button:hover:not(:disabled) {
+  color: #ff8fa6;
+  background: rgba(255, 55, 95, 0.16);
+  border-color: rgba(255, 55, 95, 0.45);
+  box-shadow:
+    0 8px 22px -10px rgba(255, 55, 95, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.AuthMenu button:hover::before {
+  transform: translateX(3px);
+}
+
+/* On the narrowest phones (about 360px) everything tightens a little more, so the header keeps two rows */
+@media (max-width: 400px) {
+  .AuthMenu {
+    gap: 5px;
+  }
+
+  .AuthMenu .greeting {
+    font-size: 0.72rem;
+  }
+
+  .AuthMenu button,
+  .AuthMenu a {
+    padding: 6px 9px;
+    font-size: 0.8rem;
+  }
+
+  .AuthMenu a::before,
+  .AuthMenu button::before {
+    width: 13px;
+    height: 13px;
+    margin-right: 4px;
+  }
+}

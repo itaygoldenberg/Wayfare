@@ -1,0 +1,36 @@
+.Spinner {
+  display: flex;
+  justify-content: center;
+  padding: 90px 0;
+}
+
+/* A ring of the accent gradient, hollowed out by a mask */
+.Spinner .ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    #64d2ff 120deg,
+    #0a84ff 240deg,
+    #bf5af2 360deg
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 4px),
+    #000 calc(100% - 3px)
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 4px),
+    #000 calc(100% - 3px)
+  );
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
